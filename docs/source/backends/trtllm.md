@@ -53,7 +53,7 @@ Your compiled engine will be saved in the `/tmp/engines/$MODEL_NAME` directory, 
 
 ## Using the TRTLLM backend
 
-Run TGI-TRTLLM Docker image with the compiled engine:
+Run Ember-TRTLLM Docker image with the compiled engine:
 
 ```bash
 MODEL_NAME="meta-llama/Llama-3.1-8B-Instruct"
@@ -69,7 +69,7 @@ docker run \
   -e PORT=3000 \
   -e HF_TOKEN=$HF_TOKEN \
   -v "$DESTINATION"/<YOUR_GPU_ARCHITECTURE>/engines:/data \
-  ghcr.io/huggingface/text-generation-inference:latest-trtllm \
+  ghcr.io/huggingface/ember:latest-trtllm \
   --model-id /data/ \
   --tokenizer-name $MODEL_NAME
 ```
@@ -157,7 +157,7 @@ RUN chmod +x /opt/install_tensorrt.sh && \
 
 # Build Backend
 FROM cuda-builder AS tgi-builder
-WORKDIR /usr/src/text-generation-inference
+WORKDIR /usr/src/ember
 
 # Scoped global args reuse
 ARG cuda_arch_list

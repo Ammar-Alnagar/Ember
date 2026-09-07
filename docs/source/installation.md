@@ -2,18 +2,18 @@
 
 <Tip warning={true}>
 
-Installing TGI from source is not the recommended usage. We strongly recommend to use TGI through Docker, check the [Quick Tour](./quicktour), [Installation for Nvidia GPUs](./installation_nvidia) and [Installation for AMD GPUs](./installation_amd) to learn how to use TGI with Docker.
+Installing Ember from source is not the recommended usage. We strongly recommend to use Ember through Docker, check the [Quick Tour](./quicktour), [Installation for Nvidia GPUs](./installation_nvidia) and [Installation for AMD GPUs](./installation_amd) to learn how to use Ember with Docker.
 
 </Tip>
 
 ## Install CLI
 
-You can use TGI command-line interface (CLI) to download weights, serve and quantize models, or get information on serving parameters.
+You can use Ember command-line interface (CLI) to download weights, serve and quantize models, or get information on serving parameters.
 
-To install the CLI, you need to first clone the TGI repository and then run `make`.
+To install the CLI, you need to first clone the Ember repository and then run `make`.
 
 ```bash
-git clone https://github.com/huggingface/text-generation-inference.git && cd text-generation-inference
+git clone https://github.com/huggingface/ember.git && cd ember
 make install
 ```
 
@@ -25,9 +25,9 @@ BUILD_EXTENSIONS=True make install
 
 ## Local Installation from Source
 
-Before you start, you will need to setup your environment, and install Text Generation Inference. Text Generation Inference is tested on **Python 3.9+**.
+Before you start, you will need to setup your environment, and install Ember. Ember is tested on **Python 3.9+**.
 
-Text Generation Inference is available on pypi, conda and GitHub.
+Ember is available on pypi, conda and GitHub.
 
 To install and launch locally, first [install Rust](https://rustup.rs/) and create a Python virtual environment with at least
 Python 3.9, e.g. using conda:
@@ -35,8 +35,8 @@ Python 3.9, e.g. using conda:
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-conda create -n text-generation-inference python=3.9
-conda activate text-generation-inference
+conda create -n ember python=3.9
+conda activate ember
 ```
 
 You may also need to install Protoc.
@@ -57,10 +57,10 @@ On MacOS, using Homebrew:
 brew install protobuf
 ```
 
-Then run to install Text Generation Inference:
+Then run to install Ember:
 
 ```bash
-git clone https://github.com/huggingface/text-generation-inference.git && cd text-generation-inference
+git clone https://github.com/huggingface/ember.git && cd ember
 BUILD_EXTENSIONS=True make install
 ```
 

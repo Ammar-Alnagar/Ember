@@ -4,7 +4,7 @@ The inference clients from [huggingface_hub](https://huggingface.co/docs/hugging
 # Text Generation
 
 The Hugging Face Text Generation Python library provides a convenient way of interfacing with a
-`text-generation-inference` instance running on
+`ember` instance running on
 [Hugging Face Inference Endpoints](https://huggingface.co/inference-endpoints) or on the Hugging Face Hub.
 
 ## Get Started

@@ -1,4 +1,4 @@
-# Text Generation Inference - TensorRT-LLM Backend Implementation
+# Ember - TensorRT-LLM Backend Implementation
 
 ## Description
 

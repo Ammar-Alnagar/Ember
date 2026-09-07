@@ -1,7 +1,7 @@
 # Metrics
 
-TGI exposes multiple metrics that can be collected via the `/metrics` Prometheus endpoint.
-These metrics can be used to monitor the performance of TGI, autoscale deployment and to help identify bottlenecks.
+Ember exposes multiple metrics that can be collected via the `/metrics` Prometheus endpoint.
+These metrics can be used to monitor the performance of Ember, autoscale deployment and to help identify bottlenecks.
 
 The following metrics are exposed:
 

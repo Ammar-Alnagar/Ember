@@ -93,13 +93,13 @@ Currently our directory structure looks like this:
 
 Now the lets generate the data and start training the model. This process will take a while since we are generating data from the model.
 
-First make sure you have an instance of TGI running with the model you want to use for self-distillation.
+First make sure you have an instance of Ember running with the model you want to use for self-distillation.
 
 ```bash
 model=HuggingFaceH4/zephyr-7b-beta
 volume=/home/ubuntu/.cache/huggingface/hub/
 
-docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data ghcr.io/huggingface/text-generation-inference:latest --model-id $model
+docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data ghcr.io/huggingface/ember:latest --model-id $model
 ```
 
 Now we can generate the data using the `create_data.py` script.

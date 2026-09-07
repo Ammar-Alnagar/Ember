@@ -1,6 +1,6 @@
 # Neuron backend for AWS Trainium and Inferentia
 
-The Neuron backend allows the deployment of TGI on AWS Trainium and Inferentia family of chips.
+The Neuron backend allows the deployment of Ember on AWS Trainium and Inferentia family of chips.
 
 The following hardware targets are supported:
 - Trainium 1,
@@ -8,7 +8,7 @@ The following hardware targets are supported:
 
 ## Features
 
-The basic TGI features are supported:
+The basic Ember features are supported:
 
 - continuous batching,
 - token streaming,
@@ -17,7 +17,7 @@ The basic TGI features are supported:
 
 ## Deploy the service from the Hugging Face hub
 
-The simplest way to deploy the NeuronX TGI service for a specific model is to follow the
+The simplest way to deploy the NeuronX Ember service for a specific model is to follow the
 deployment instructions in the model card:
 
 - click on the "Deploy" button on the right,
@@ -28,23 +28,23 @@ deployment instructions in the model card:
 
 ## Deploy the service on a dedicated host
 
-The service is launched simply by running the text-generation-inference container with two sets of parameters:
+The service is launched simply by running the ember container with two sets of parameters:
 
 ```
-docker run <system_parameters> ghcr.io/huggingface/text-generation-inference:3.3.5-neuron <service_parameters>
+docker run <system_parameters> ghcr.io/huggingface/ember:3.3.5-neuron <service_parameters>
 ```
 
 - system parameters are used to map ports, volumes and devices between the host and the service,
 - service parameters are forwarded to the `text-generation-launcher`.
 
-When deploying a service, you will need a pre-compiled Neuron model. The Neuron TGI backend supports two main modes of operation:
+When deploying a service, you will need a pre-compiled Neuron model. The Neuron Ember backend supports two main modes of operation:
 
 - you can either deploy the service on a model that has already been exported to Neuron,
 - or alternatively you can take advantage of the Neuron Model Cache to export your own model.
 
 ### Common system parameters
 
-Whenever you launch a TGI service, we highly recommend you to mount a shared volume mounted as `/data` in the container: this is where
+Whenever you launch a Ember service, we highly recommend you to mount a shared volume mounted as `/data` in the container: this is where
 the models will be cached to speed up further instantiations of the service.
 
 Note also that enough neuron devices should be made visible to the container, knowing that each neuron device has two cores (so when deploying on two cores you need to expose at least one device).
@@ -61,7 +61,7 @@ docker run -p 8080:80 \
        -v $(pwd)/data:/data \
        --device=/dev/neuron0 \
        -e HF_TOKEN=${HF_TOKEN} \
-       ghcr.io/huggingface/text-generation-inference:<VERSION>-neuron \
+       ghcr.io/huggingface/ember:<VERSION>-neuron \
        <service_parameters>
 ```
 
@@ -86,7 +86,7 @@ docker run -p 8080:80 \
        -e HF_TOKEN=${HF_TOKEN} \
        -e HF_AUTO_CAST_TYPE="fp16" \
        -e HF_NUM_CORES=8 \
-       ghcr.io/huggingface/text-generation-inference:<VERSION>-neuron \
+       ghcr.io/huggingface/ember:<VERSION>-neuron \
        --model-id meta-llama/Meta-Llama-3-8B \
        --max-batch-size 1 \
        --max-input-length 3164 \
@@ -95,7 +95,7 @@ docker run -p 8080:80 \
 
 ### Using a model exported to a local path
 
-Alternatively, you can first [export the model to neuron format](https://huggingface.co/docs/optimum-neuron/main/en/guides/export_model#exporting-neuron-models-using-text-generation-inference) locally.
+Alternatively, you can first [export the model to neuron format](https://huggingface.co/docs/optimum-neuron/main/en/guides/export_model#exporting-neuron-models-using-ember) locally.
 
 You can then deploy the service inside the shared volume:
 
@@ -104,7 +104,7 @@ docker run -p 8080:80 \
        -v $(pwd)/data:/data \
        --device=/dev/neuron0 \
        --device=/dev/neuron1 \
-       ghcr.io/huggingface/text-generation-inference:<VERSION>-neuron \
+       ghcr.io/huggingface/ember:<VERSION>-neuron \
        --model-id /data/<neuron_model_path>
 ```
 
@@ -123,7 +123,7 @@ docker run -p 8080:80 \
        --device=/dev/neuron0 \
        --device=/dev/neuron1 \
        -e HF_TOKEN=${HF_TOKEN} \
-       ghcr.io/huggingface/text-generation-inference:<VERSION>-neuron \
+       ghcr.io/huggingface/ember:<VERSION>-neuron \
        --model-id <organization>/<neuron-model>
 ```
 
@@ -132,7 +132,7 @@ docker run -p 8080:80 \
 Use the following command to list the available service parameters:
 
 ```
-docker run ghcr.io/huggingface/text-generation-inference:<VERSION>-neuron --help
+docker run ghcr.io/huggingface/ember:<VERSION>-neuron --help
 ```
 
 The configuration of an inference endpoint is always a compromise between throughput and latency: serving more requests in parallel will allow a higher throughput, but it will increase the latency.
@@ -153,7 +153,7 @@ Although not strictly necessary, but important for efficient prefilling:
 
 As seen in the previous paragraph, neuron model static batch size has a direct influence on the endpoint latency and throughput.
 
-Please refer to [text-generation-inference](https://github.com/huggingface/text-generation-inference) for optimization hints.
+Please refer to [ember](https://github.com/huggingface/ember) for optimization hints.
 
 Note that the main constraint is to be able to fit the model for the specified `batch_size` within the total device memory available
 on your instance (16GB per neuron core, with 2 cores per device).

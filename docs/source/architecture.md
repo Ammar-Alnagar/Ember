@@ -1,10 +1,10 @@
-# Text Generation Inference Architecture
+# Ember Architecture
 
-This document aims at describing the architecture of Text Generation Inference (TGI), by describing the call flow between the separate components.
+This document aims at describing the architecture of Ember (Ember), by describing the call flow between the separate components.
 
 A high-level architecture diagram can be seen here:
 
-![TGI architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/TGI.png)
+![Ember architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/Ember.png)
 
 This diagram shows well there are these separate components:
 
@@ -18,8 +18,8 @@ The router and the model server can be two different machines, they do not need 
 
 ## The Router
 
-This component is a rust web server binary that accepts HTTP requests using the custom [HTTP API](https://huggingface.github.io/text-generation-inference/), as well as OpenAI's [Messages API](https://huggingface.co/docs/text-generation-inference/messages_api).
-The router receives the API calls and handles the "baches" logic (and introduction to batching can be found [here](https://github.com/huggingface/text-generation-inference/blob/main/router/README.md)).
+This component is a rust web server binary that accepts HTTP requests using the custom [HTTP API](https://huggingface.github.io/ember/), as well as OpenAI's [Messages API](https://huggingface.co/docs/ember/messages_api).
+The router receives the API calls and handles the "baches" logic (and introduction to batching can be found [here](https://github.com/huggingface/ember/blob/main/router/README.md)).
 It uses different strategies to reduce latency between requests and responses, especially oriented to decoding latency. It will use queues, schedulers, and block allocators to achieve that and produce batched requests that it will then be sent to the model server.
 
 ### Router's command line
@@ -96,19 +96,19 @@ Options:
 
 ## The Model Server
 
-The model server is a python server, capable of starting a server waiting for gRPC requests, loads a given model, perform sharding to provide [tensor parallelism](https://huggingface.co/docs/text-generation-inference/conceptual/tensor_parallelism), and stays alive while waiting for new requests.
+The model server is a python server, capable of starting a server waiting for gRPC requests, loads a given model, perform sharding to provide [tensor parallelism](https://huggingface.co/docs/ember/conceptual/tensor_parallelism), and stays alive while waiting for new requests.
 The model server supports models instantiated using Pytorch and optimized for inference mainly on CUDA/ROCM.
 
 ### Model Server Variants
 
 Several variants of the model server exist that are actively supported by Hugging Face:
 
-- By default, the model server will attempt building [a server optimized for Nvidia GPUs with CUDA](https://huggingface.co/docs/text-generation-inference/installation_nvidia). The code for this version is hosted in the [main TGI repository](https://github.com/huggingface/text-generation-inference).
-- A [version optimized for AMD with ROCm](https://huggingface.co/docs/text-generation-inference/installation_amd) is hosted in the main TGI repository. Some model features differ.
-- A [version optimized for Intel GPUs](https://huggingface.co/docs/text-generation-inference/installation_intel) is hosted in the main TGI repository. Some model features differ.
-- The [version for Intel Gaudi](https://huggingface.co/docs/text-generation-inference/installation_gaudi) is maintained on a forked repository, often resynchronized with the main [TGI repository](https://github.com/huggingface/tgi-gaudi).
-- A [version for Neuron (AWS Inferentia2)](https://huggingface.co/docs/text-generation-inference/installation_inferentia) is maintained in the main TGI repository. Some model features differ.
-- A version for Google TPUs is maintained as part of [Optimum TPU](https://github.com/huggingface/optimum-tpu/tree/main/text-generation-inference).
+- By default, the model server will attempt building [a server optimized for Nvidia GPUs with CUDA](https://huggingface.co/docs/ember/installation_nvidia). The code for this version is hosted in the [main Ember repository](https://github.com/huggingface/ember).
+- A [version optimized for AMD with ROCm](https://huggingface.co/docs/ember/installation_amd) is hosted in the main Ember repository. Some model features differ.
+- A [version optimized for Intel GPUs](https://huggingface.co/docs/ember/installation_intel) is hosted in the main Ember repository. Some model features differ.
+- The [version for Intel Gaudi](https://huggingface.co/docs/ember/installation_gaudi) is maintained on a forked repository, often resynchronized with the main [Ember repository](https://github.com/huggingface/tgi-gaudi).
+- A [version for Neuron (AWS Inferentia2)](https://huggingface.co/docs/ember/installation_inferentia) is maintained in the main Ember repository. Some model features differ.
+- A version for Google TPUs is maintained as part of [Optimum TPU](https://github.com/huggingface/optimum-tpu/tree/main/ember).
 
 Not all variants provide the same features, as hardware and middleware capabilities do not provide the same optimizations.
 
@@ -120,7 +120,7 @@ The official command line interface (CLI) for the server supports three subcomma
 - `quantize` will allow to quantize a model using the `qptq` package. This feature is not available nor supported on all variants;
 - `serve` will start the server that load a model (or a model shard), receives gRPC calls from the router, performs an inference and provides a formatted response to the given request.
 
-Serve's command line parameters on the TGI repository are these:
+Serve's command line parameters on the Ember repository are these:
 
 ```
  Usage: cli.py serve [OPTIONS] MODEL_ID
@@ -144,7 +144,7 @@ Serve's command line parameters on the TGI repository are these:
 │ --json-output          --no-json-output                                      [default: no-json-output]   │
 │ --otlp-endpoint                                  TEXT                        [default: None]             │
 │ --otlp-service-name                              TEXT                        [default:                   │
-│                                                                              text-generation-inference...│
+│                                                                              ember...│
 │ --help                                                                       Show this message and exit. │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
@@ -153,7 +153,7 @@ Note that some variants might support different parameters, and they could possi
 
 ## Call Flow
 
-Once both components are initialized, weights downloaded and model server is up and running, router and model server exchange data and info through the gRPC call. There are currently two supported schemas, [v2](https://github.com/huggingface/text-generation-inference/blob/main/proto/generate.proto) and [v3](https://github.com/huggingface/text-generation-inference/blob/main/proto/v3/generate.proto). These two versions are almost identical, except for:
+Once both components are initialized, weights downloaded and model server is up and running, router and model server exchange data and info through the gRPC call. There are currently two supported schemas, [v2](https://github.com/huggingface/ember/blob/main/proto/generate.proto) and [v3](https://github.com/huggingface/ember/blob/main/proto/v3/generate.proto). These two versions are almost identical, except for:
 
 - input chunks support, for text and image data,
 - paged attention support

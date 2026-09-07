@@ -2,34 +2,34 @@
 
 The easiest way of getting started is using the official Docker container. Install Docker following [their installation instructions](https://docs.docker.com/get-docker/).
 
-## Launching TGI
+## Launching Ember
 
-Let's say you want to deploy [teknium/OpenHermes-2.5-Mistral-7B](https://huggingface.co/teknium/OpenHermes-2.5-Mistral-7B) model with TGI on an Nvidia GPU. Here is an example on how to do that:
+Let's say you want to deploy [teknium/OpenHermes-2.5-Mistral-7B](https://huggingface.co/teknium/OpenHermes-2.5-Mistral-7B) model with Ember on an Nvidia GPU. Here is an example on how to do that:
 
 ```bash
 model=teknium/OpenHermes-2.5-Mistral-7B
 volume=$PWD/data # share a volume with the Docker container to avoid downloading weights every run
 
 docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data \
-    ghcr.io/huggingface/text-generation-inference:3.3.5 \
+    ghcr.io/huggingface/ember:3.3.5 \
     --model-id $model
 ```
 
 <Tip>
 
 If you want to serve gated or private models, please refer to
-[this guide](https://huggingface.co/docs/text-generation-inference/en/basic_tutorials/gated_model_access)
+[this guide](https://huggingface.co/docs/ember/en/basic_tutorials/gated_model_access)
 for detailed instructions.
 
 </Tip>
 
 ### Supported hardware
 
-TGI supports various hardware. Make sure to check the [Using TGI with Nvidia GPUs](./installation_nvidia), [Using TGI with AMD GPUs](./installation_amd), [Using TGI with Intel GPUs](./installation_intel), [Using TGI with Gaudi](./installation_gaudi), [Using TGI with Inferentia](./installation_inferentia) guides depending on which hardware you would like to deploy TGI on.
+Ember supports various hardware. Make sure to check the [Using Ember with Nvidia GPUs](./installation_nvidia), [Using Ember with AMD GPUs](./installation_amd), [Using Ember with Intel GPUs](./installation_intel), [Using Ember with Gaudi](./installation_gaudi), [Using Ember with Inferentia](./installation_inferentia) guides depending on which hardware you would like to deploy Ember on.
 
-## Consuming TGI
+## Consuming Ember
 
-Once TGI is running, you can use the `generate` endpoint or the Open AI Chat Completion API compatible [Messages API](https://huggingface.co/docs/text-generation-inference/en/messages_api) by doing requests. To learn more about how to query the endpoints, check the [Consuming TGI](./basic_tutorials/consuming_tgi) section, where we show examples with utility libraries and UIs. Below you can see a simple snippet to query the endpoint.
+Once Ember is running, you can use the `generate` endpoint or the Open AI Chat Completion API compatible [Messages API](https://huggingface.co/docs/ember/en/messages_api) by doing requests. To learn more about how to query the endpoints, check the [Consuming Ember](./basic_tutorials/consuming_tgi) section, where we show examples with utility libraries and UIs. Below you can see a simple snippet to query the endpoint.
 
 <inferencesnippet>
 <python>
@@ -96,7 +96,7 @@ curl 127.0.0.1:8080/generate \
 To see all possible deploy flags and options, you can use the `--help` flag. It's possible to configure the number of shards, quantization, generation parameters, and more.
 
 ```bash
-docker run ghcr.io/huggingface/text-generation-inference:3.3.5 --help
+docker run ghcr.io/huggingface/ember:3.3.5 --help
 ```
 
 </Tip>

@@ -1,3 +1,3 @@
-# Using TGI with Inferentia
+# Using Ember with Inferentia
 
-You can use TGI on AWS Trainium and Inferentia platforms using the [TGI neuron backend](https://huggingface.co/docs/text-generation-inference/backends/neuron).
+You can use Ember on AWS Trainium and Inferentia platforms using the [Ember neuron backend](https://huggingface.co/docs/ember/backends/neuron).

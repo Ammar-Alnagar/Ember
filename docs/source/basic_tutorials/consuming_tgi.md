@@ -1,8 +1,8 @@
-# Consuming Text Generation Inference
+# Consuming Ember
 
-There are many ways to consume Text Generation Inference (TGI) server in your applications. After launching the server, you can use the [Messages API](https://huggingface.co/docs/text-generation-inference/en/messages_api) `/v1/chat/completions` route and make a `POST` request to get results from the server. You can also pass `"stream": true` to the call if you want TGI to return a stream of tokens.
+There are many ways to consume Ember (Ember) server in your applications. After launching the server, you can use the [Messages API](https://huggingface.co/docs/ember/en/messages_api) `/v1/chat/completions` route and make a `POST` request to get results from the server. You can also pass `"stream": true` to the call if you want Ember to return a stream of tokens.
 
-For more information on the API, consult the OpenAPI documentation of `text-generation-inference` available [here](https://huggingface.github.io/text-generation-inference).
+For more information on the API, consult the OpenAPI documentation of `ember` available [here](https://huggingface.github.io/ember).
 
 You can make the requests using any tool of your preference, such as curl, Python, or TypeScript. For an end-to-end experience, we've open-sourced [ChatUI](https://github.com/huggingface/chat-ui), a chat interface for open-access models.
 
@@ -49,7 +49,7 @@ curl 127.0.0.1:8080/generate \
 
 ### Inference Client
 
-[`huggingface_hub`](https://huggingface.co/docs/huggingface_hub/main/en/index) is a Python library to interact with the Hugging Face Hub, including its endpoints. It provides a high-level class, [`huggingface_hub.InferenceClient`](https://huggingface.co/docs/huggingface_hub/package_reference/inference_client#huggingface_hub.InferenceClient), which makes it easy to make calls to TGI's Messages API. `InferenceClient` also takes care of parameter validation and provides a simple-to-use interface.
+[`huggingface_hub`](https://huggingface.co/docs/huggingface_hub/main/en/index) is a Python library to interact with the Hugging Face Hub, including its endpoints. It provides a high-level class, [`huggingface_hub.InferenceClient`](https://huggingface.co/docs/huggingface_hub/package_reference/inference_client#huggingface_hub.InferenceClient), which makes it easy to make calls to Ember's Messages API. `InferenceClient` also takes care of parameter validation and provides a simple-to-use interface.
 
 Install `huggingface_hub` package via pip.
 
@@ -86,7 +86,7 @@ There is also an async version of the client, `AsyncInferenceClient`, based on `
 
 ### OpenAI Client
 
-You can directly use the OpenAI [Python](https://github.com/openai/openai-python) or [JS](https://github.com/openai/openai-node) clients to interact with TGI.
+You can directly use the OpenAI [Python](https://github.com/openai/openai-python) or [JS](https://github.com/openai/openai-node) clients to interact with Ember.
 
 Install the OpenAI Python package via pip.
 
@@ -97,7 +97,7 @@ pip install openai
 ```python
 from openai import OpenAI
 
-# init the client but point it to TGI
+# init the client but point it to Ember
 client = OpenAI(
     base_url="http://localhost:8080/v1/",
     api_key="-"
@@ -121,7 +121,7 @@ for message in chat_completion:
 
 ### Gradio
 
-Gradio is a Python library that helps you build web applications for your machine learning models with a few lines of code. It has a `ChatInterface` wrapper that helps create neat UIs for chatbots. Let's take a look at how to create a chatbot with streaming mode using TGI and Gradio. Let's install Gradio and Hub Python library first.
+Gradio is a Python library that helps you build web applications for your machine learning models with a few lines of code. It has a `ChatInterface` wrapper that helps create neat UIs for chatbots. Let's take a look at how to create a chatbot with streaming mode using Ember and Gradio. Let's install Gradio and Hub Python library first.
 
 ```bash
 pip install huggingface-hub gradio
@@ -153,8 +153,8 @@ def inference(message, history):
 gr.ChatInterface(
     inference,
     type="messages",
-    description="This is the demo for Gradio UI consuming TGI endpoint.",
-    title="Gradio 🤝 TGI",
+    description="This is the demo for Gradio UI consuming Ember endpoint.",
+    title="Gradio 🤝 Ember",
     examples=["Are tomatoes vegetables?"],
 ).queue().launch()
 ```
@@ -181,9 +181,9 @@ You can read more about how to customize a `ChatInterface` [here](https://www.gr
 
 ### ChatUI
 
-[ChatUI](https://github.com/huggingface/chat-ui) is an open-source interface built for consuming LLMs. It offers many customization options, such as web search with SERP API and more. ChatUI can automatically consume the TGI server and even provides an option to switch between different TGI endpoints. You can try it out at [Hugging Chat](https://huggingface.co/chat/), or use the [ChatUI Docker Space](https://huggingface.co/new-space?template=huggingchat/chat-ui-template) to deploy your own Hugging Chat to Spaces.
+[ChatUI](https://github.com/huggingface/chat-ui) is an open-source interface built for consuming LLMs. It offers many customization options, such as web search with SERP API and more. ChatUI can automatically consume the Ember server and even provides an option to switch between different Ember endpoints. You can try it out at [Hugging Chat](https://huggingface.co/chat/), or use the [ChatUI Docker Space](https://huggingface.co/new-space?template=huggingchat/chat-ui-template) to deploy your own Hugging Chat to Spaces.
 
-To serve both ChatUI and TGI in same environment, simply add your own endpoints to the `MODELS` variable in `.env.local` file inside the `chat-ui` repository. Provide the endpoints pointing to where TGI is served.
+To serve both ChatUI and Ember in same environment, simply add your own endpoints to the `MODELS` variable in `.env.local` file inside the `chat-ui` repository. Provide the endpoints pointing to where Ember is served.
 
 ```
 {

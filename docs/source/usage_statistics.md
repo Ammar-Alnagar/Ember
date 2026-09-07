@@ -1,16 +1,16 @@
 
 # Collection of Usage Statistics
 
-Text Generation Inference collects anonymous usage statistics to help us improve the service. The collected data is used to improve TGI and to understand what causes failures. The data is collected transparently and any sensitive information is omitted.
+Ember collects anonymous usage statistics to help us improve the service. The collected data is used to improve Ember and to understand what causes failures. The data is collected transparently and any sensitive information is omitted.
 
-Usage statistics are collected only when TGI is running in a Docker container. This prevents data collection when TGI is run directly on the host machine. The collected data includes startup and shutdown events, as well as a heartbeat signal sent every 15 minutes.
+Usage statistics are collected only when Ember is running in a Docker container. This prevents data collection when Ember is run directly on the host machine. The collected data includes startup and shutdown events, as well as a heartbeat signal sent every 15 minutes.
 
 ## What data is collected
 
-The code that collects the data is available [here](https://github.com/huggingface/text-generation-inference/blob/main/router/src/usage_stats.rs).
+The code that collects the data is available [here](https://github.com/huggingface/ember/blob/main/router/src/usage_stats.rs).
 As of release 2.1.2 this is an example of the data collected:
 
-- From the TGI configuration:
+- From the Ember configuration:
 ```json
 {
   "event_type": "start",

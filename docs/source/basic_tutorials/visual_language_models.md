@@ -1,4 +1,4 @@
-# Vision Language Model Inference in TGI
+# Vision Language Model Inference in Ember
 
 Visual Language Model (VLM) are models that consume both image and text inputs to generate text.
 
@@ -89,7 +89,7 @@ or with OpenAI's [client library](https://github.com/openai/openai-python):
 ```python
 from openai import OpenAI
 
-# init the client but point it to TGI
+# init the client but point it to Ember
 client = OpenAI(base_url="http://localhost:3000/v1", api_key="-")
 
 chat_completion = client.chat.completions.create(
@@ -163,7 +163,7 @@ for await (const r of stream) {
 
 ## Combining Vision Language Models with Other Features
 
-VLMs in TGI have several advantages, for example these models can be used in tandem with other features for more complex tasks. For example, you can use VLMs with [Guided Generation](/docs/conceptual/guided-generation) to generate specific JSON data from an image.
+VLMs in Ember have several advantages, for example these models can be used in tandem with other features for more complex tasks. For example, you can use VLMs with [Guided Generation](/docs/conceptual/guided-generation) to generate specific JSON data from an image.
 
 <div class="flex justify-center">
     <img

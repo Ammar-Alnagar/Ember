@@ -1,6 +1,6 @@
-# Text Generation Inference Python gRPC Server
+# Ember Python gRPC Server
 
-A Python gRPC server for Text Generation Inference
+A Python gRPC server for Ember
 
 ## Install
 

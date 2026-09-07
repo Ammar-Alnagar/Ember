@@ -11,13 +11,13 @@ and moving slowly but surely all the libs to make use of it by default.
 The move is intentionnally slow in order to make breaking changes as little impact as possible on users throughout.
 
 
-# TGI 2.0
+# Ember 2.0
 
-Since the release of TGI 2.0, we take the opportunity of this major version increase to break backward compatibility for these pytorch
+Since the release of Ember 2.0, we take the opportunity of this major version increase to break backward compatibility for these pytorch
 models (since they are a huge security risk for anyone deploying them).
 
 
-From now on, TGI will not convert automatically pickle files without having `--trust-remote-code` flag or `TRUST_REMOTE_CODE=true` in the environment variables.
+From now on, Ember will not convert automatically pickle files without having `--trust-remote-code` flag or `TRUST_REMOTE_CODE=true` in the environment variables.
 This flag is already used for community defined inference code, and is therefore quite representative of the level of confidence you are giving the model providers.
 
 

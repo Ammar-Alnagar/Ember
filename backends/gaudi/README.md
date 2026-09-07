@@ -1,12 +1,12 @@
-# Text-generation-inference - Gaudi backend
+# ember - Gaudi backend
 
 ## Description
 
-This is the TGI backend for Intel Gaudi. This backend is composed of the tgi server optimized for Gaudi hardware.
+This is the Ember backend for Intel Gaudi. This backend is composed of the tgi server optimized for Gaudi hardware.
 
 ## Build your own image
 
-The simplest way to build TGI with the Gaudi backend is to use the provided `Makefile`:
+The simplest way to build Ember with the Gaudi backend is to use the provided `Makefile`:
 
 Option 1: From the project root directory:
 ```bash

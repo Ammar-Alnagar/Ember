@@ -1,24 +1,24 @@
 > [!CAUTION]
-> text-generation-inference is now in maintenance mode. Going forward, we will accept pull requests for minor bug fixes, documentation improvements and lightweight maintenance tasks.
+> Ember is now in maintenance mode. Going forward, we will accept pull requests for minor bug fixes, documentation improvements and lightweight maintenance tasks.
 >
-> TGI has initiated the movement for optimized inference engines to rely on a `transformers` model architectures. This approach is now adopted by downstream inference engines, which we contribute to and recommend using going forward: [vllm](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), as well as local engines with inter-compatibility such as llama.cpp or MLX.
+> Ember has initiated the movement for optimized inference engines to rely on a `transformers` model architectures. This approach is now adopted by downstream inference engines, which we contribute to and recommend using going forward: [vllm](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), as well as local engines with inter-compatibility such as llama.cpp or MLX.
 
 <div align="center">
 
 <a href="https://www.youtube.com/watch?v=jlMAX2Oaht0">
-  <img width=560 alt="Making TGI deployment optimal" src="https://huggingface.co/datasets/Narsil/tgi_assets/resolve/main/thumbnail.png">
+  <img width=560 alt="Making Ember deployment optimal" src="https://huggingface.co/datasets/Narsil/tgi_assets/resolve/main/thumbnail.png">
 </a>
 
-# Text Generation Inference
+# Ember
 
-<a href="https://github.com/huggingface/text-generation-inference">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/huggingface/text-generation-inference?style=social">
+<a href="https://github.com/huggingface/ember">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/huggingface/ember?style=social">
 </a>
-<a href="https://huggingface.github.io/text-generation-inference">
+<a href="https://huggingface.github.io/ember">
   <img alt="Swagger API documentation" src="https://img.shields.io/badge/API-Swagger-informational">
 </a>
 
-A Rust, Python and gRPC server for text generation inference. Used in production at [Hugging Face](https://huggingface.co)
+A Rust, Python and gRPC server for high-performance text generation. Used in production at [Hugging Face](https://huggingface.co)
 to power Hugging Chat, the Inference API and Inference Endpoints.
 
 </div>
@@ -41,14 +41,14 @@ to power Hugging Chat, the Inference API and Inference Endpoints.
   - [Develop](#develop)
   - [Testing](#testing)
 
-Text Generation Inference (TGI) is a toolkit for deploying and serving Large Language Models (LLMs). TGI enables high-performance text generation for the most popular open-source LLMs, including Llama, Falcon, StarCoder, BLOOM, GPT-NeoX, and [more](https://huggingface.co/docs/text-generation-inference/supported_models). TGI implements many features, such as:
+Ember is a toolkit for deploying and serving Large Language Models (LLMs). Ember enables high-performance text generation for the most popular open-source LLMs, including Llama, Falcon, StarCoder, BLOOM, GPT-NeoX, and [more](https://huggingface.co/docs/ember/supported_models). Ember implements many features, such as:
 
 - Simple launcher to serve most popular LLMs
 - Production ready (distributed tracing with Open Telemetry, Prometheus metrics)
 - Tensor Parallelism for faster inference on multiple GPUs
 - Token streaming using Server-Sent Events (SSE)
 - Continuous batching of incoming requests for increased total throughput
-- [Messages API](https://huggingface.co/docs/text-generation-inference/en/messages_api) compatible with Open AI Chat Completion API
+- [Messages API](https://huggingface.co/docs/ember/en/messages_api) compatible with Open AI Chat Completion API
 - Optimized transformers code for inference using [Flash Attention](https://github.com/HazyResearch/flash-attention) and [Paged Attention](https://github.com/vllm-project/vllm) on the most popular architectures
 - Quantization with :
   - [bitsandbytes](https://github.com/TimDettmers/bitsandbytes)
@@ -62,17 +62,17 @@ Text Generation Inference (TGI) is a toolkit for deploying and serving Large Lan
 - Logits warper (temperature scaling, top-p, top-k, repetition penalty, more details see [transformers.LogitsProcessor](https://huggingface.co/docs/transformers/internal/generation_utils#transformers.LogitsProcessor))
 - Stop sequences
 - Log probabilities
-- [Speculation](https://huggingface.co/docs/text-generation-inference/conceptual/speculation) ~2x latency
-- [Guidance/JSON](https://huggingface.co/docs/text-generation-inference/conceptual/guidance). Specify output format to speed up inference and make sure the output is valid according to some specs..
+- [Speculation](https://huggingface.co/docs/ember/conceptual/speculation) ~2x latency
+- [Guidance/JSON](https://huggingface.co/docs/ember/conceptual/guidance). Specify output format to speed up inference and make sure the output is valid according to some specs..
 - Custom Prompt Generation: Easily generate text by providing custom prompts to guide the model's output
 - Fine-tuning Support: Utilize fine-tuned models for specific tasks to achieve higher accuracy and performance
 
 ### Hardware support
 
-- [Nvidia](https://github.com/huggingface/text-generation-inference/pkgs/container/text-generation-inference)
-- [AMD](https://github.com/huggingface/text-generation-inference/pkgs/container/text-generation-inference) (-rocm)
-- [Inferentia](https://github.com/huggingface/optimum-neuron/tree/main/text-generation-inference)
-- [Intel GPU](https://github.com/huggingface/text-generation-inference/pull/1475)
+- [Nvidia](https://github.com/huggingface/ember/pkgs/container/ember)
+- [AMD](https://github.com/huggingface/ember/pkgs/container/ember) (-rocm)
+- [Inferentia](https://github.com/huggingface/optimum-neuron/tree/main/ember)
+- [Intel GPU](https://github.com/huggingface/ember/pull/1475)
 - [Gaudi](https://github.com/huggingface/tgi-gaudi)
 - [Google TPU](https://huggingface.co/docs/optimum-tpu/howto/serving)
 
@@ -81,7 +81,7 @@ Text Generation Inference (TGI) is a toolkit for deploying and serving Large Lan
 
 ### Docker
 
-For a detailed starting guide, please see the [Quick Tour](https://huggingface.co/docs/text-generation-inference/quicktour). The easiest way of getting started is using the official Docker container:
+For a detailed starting guide, please see the [Quick Tour](https://huggingface.co/docs/ember/quicktour). The easiest way of getting started is using the official Docker container:
 
 ```shell
 model=HuggingFaceH4/zephyr-7b-beta
@@ -89,7 +89,7 @@ model=HuggingFaceH4/zephyr-7b-beta
 volume=$PWD/data
 
 docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data \
-    ghcr.io/huggingface/text-generation-inference:3.3.5 --model-id $model
+    ghcr.io/huggingface/ember:3.3.5 --model-id $model
 ```
 
 And then you can make requests like
@@ -101,13 +101,13 @@ curl 127.0.0.1:8080/generate_stream \
     -H 'Content-Type: application/json'
 ```
 
-You can also use [TGI's Messages API](https://huggingface.co/docs/text-generation-inference/en/messages_api) to obtain Open AI Chat Completion API compatible responses.
+You can also use [Ember's Messages API](https://huggingface.co/docs/ember/en/messages_api) to obtain Open AI Chat Completion API compatible responses.
 
 ```bash
 curl localhost:8080/v1/chat/completions \
     -X POST \
     -d '{
-  "model": "tgi",
+  "model": "ember",
   "messages": [
     {
       "role": "system",
@@ -126,22 +126,22 @@ curl localhost:8080/v1/chat/completions \
 
 **Note:** To use NVIDIA GPUs, you need to install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html). We also recommend using NVIDIA drivers with CUDA version 12.2 or higher. For running the Docker container on a machine with no GPUs or CUDA support, it is enough to remove the `--gpus all` flag and add `--disable-custom-kernels`, please note CPU is not the intended platform for this project, so performance might be subpar.
 
-**Note:** TGI supports AMD Instinct MI210 and MI250 GPUs. Details can be found in the [Supported Hardware documentation](https://huggingface.co/docs/text-generation-inference/installation_amd#using-tgi-with-amd-gpus). To use AMD GPUs, please use `docker run --device /dev/kfd --device /dev/dri --shm-size 1g -p 8080:80 -v $volume:/data ghcr.io/huggingface/text-generation-inference:3.3.5-rocm --model-id $model` instead of the command above.
+**Note:** Ember supports AMD Instinct MI210 and MI250 GPUs. Details can be found in the [Supported Hardware documentation](https://huggingface.co/docs/ember/installation_amd#using-tgi-with-amd-gpus). To use AMD GPUs, please use `docker run --device /dev/kfd --device /dev/dri --shm-size 1g -p 8080:80 -v $volume:/data ghcr.io/huggingface/ember:3.3.5-rocm --model-id $model` instead of the command above.
 
-To see all options to serve your models (in the [code](https://github.com/huggingface/text-generation-inference/blob/main/launcher/src/main.rs) or in the cli):
+To see all options to serve your models (in the [code](https://github.com/huggingface/ember/blob/main/launcher/src/main.rs) or in the cli):
 ```
 text-generation-launcher --help
 ```
 
 ### API documentation
 
-You can consult the OpenAPI documentation of the `text-generation-inference` REST API using the `/docs` route.
-The Swagger UI is also available at: [https://huggingface.github.io/text-generation-inference](https://huggingface.github.io/text-generation-inference).
+You can consult the OpenAPI documentation of the `ember` REST API using the `/docs` route.
+The Swagger UI is also available at: [https://huggingface.github.io/ember](https://huggingface.github.io/ember).
 
 ### Using a private or gated model
 
 You have the option to utilize the `HF_TOKEN` environment variable for configuring the token employed by
-`text-generation-inference`. This allows you to gain access to protected resources.
+`ember`. This allows you to gain access to protected resources.
 
 For example, if you want to serve the gated Llama V2 model variants:
 
@@ -157,13 +157,13 @@ volume=$PWD/data # share a volume with the Docker container to avoid downloading
 token=<your cli READ token>
 
 docker run --gpus all --shm-size 1g -e HF_TOKEN=$token -p 8080:80 -v $volume:/data \
-    ghcr.io/huggingface/text-generation-inference:3.3.5 --model-id $model
+    ghcr.io/huggingface/ember:3.3.5 --model-id $model
 ```
 
 ### A note on Shared Memory (shm)
 
 [`NCCL`](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/index.html) is a communication framework used by
-`PyTorch` to do distributed training/inference. `text-generation-inference` makes
+`PyTorch` to do distributed training/inference. `ember` makes
 use of `NCCL` to enable Tensor Parallelism to dramatically speed up inference for large language models.
 
 In order to share data between the different devices of a `NCCL` group, `NCCL` might fall back to using the host memory if
@@ -171,7 +171,7 @@ peer-to-peer using NVLink or PCI is not possible.
 
 To allow the container to use 1G of Shared Memory and support SHM sharing, we add `--shm-size 1g` on the above command.
 
-If you are running `text-generation-inference` inside `Kubernetes`. You can also add Shared Memory to the container by
+If you are running `ember` inside `Kubernetes`. You can also add Shared Memory to the container by
 creating a volume with:
 
 ```yaml
@@ -188,25 +188,25 @@ this will impact performance.
 
 ### Distributed Tracing
 
-`text-generation-inference` is instrumented with distributed tracing using OpenTelemetry. You can use this feature
+`ember` is instrumented with distributed tracing using OpenTelemetry. You can use this feature
 by setting the address to an OTLP collector with the `--otlp-endpoint` argument. The default service name can be
 overridden with the `--otlp-service-name` argument
 
 ### Architecture
 
-![TGI architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/TGI.png)
+![Ember architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/Ember.png)
 
-Detailed blogpost by Adyen on TGI inner workings: [LLM inference at scale with TGI (Martin Iglesias Goyanes - Adyen, 2024)](https://www.adyen.com/knowledge-hub/llm-inference-at-scale-with-tgi)
+Detailed blogpost by Adyen on Ember inner workings: [LLM inference at scale with Ember (Martin Iglesias Goyanes - Adyen, 2024)](https://www.adyen.com/knowledge-hub/llm-inference-at-scale-with-tgi)
 
 ### Local install
 
-You can also opt to install `text-generation-inference` locally.
+You can also opt to install `ember` locally.
 
 First clone the repository and change directory into it:
 
 ```shell
-git clone https://github.com/huggingface/text-generation-inference
-cd text-generation-inference
+git clone https://github.com/huggingface/ember
+cd ember
 ```
 
 Then [install Rust](https://rustup.rs/) and create a Python virtual environment with at least
@@ -216,8 +216,8 @@ Python 3.9, e.g. using `conda` or `python venv`:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 #using conda
-conda create -n text-generation-inference python=3.11
-conda activate text-generation-inference
+conda create -n ember python=3.11
+conda activate ember
 
 #using python venv
 python3 -m venv .venv
@@ -257,7 +257,7 @@ sudo apt-get install libssl-dev gcc -y
 
 ### Local install (Nix)
 
-Another option is to install `text-generation-inference` locally using [Nix](https://nixos.org). Currently,
+Another option is to install `ember` locally using [Nix](https://nixos.org). Currently,
 we only support Nix on x86_64 Linux with CUDA GPUs. When using Nix, all dependencies can
 be pulled from a binary cache, removing the need to build them locally.
 
@@ -265,17 +265,17 @@ First follow the instructions to [install Cachix and enable the Hugging Face cac
 Setting up the cache is important, otherwise Nix will build many of the dependencies
 locally, which can take hours.
 
-After that you can run TGI with `nix run`:
+After that you can run Ember with `nix run`:
 
 ```shell
-cd text-generation-inference
+cd ember
 nix run --extra-experimental-features nix-command --extra-experimental-features flakes . -- --model-id meta-llama/Llama-3.1-8B-Instruct
 ```
 
 **Note:** when you are using Nix on a non-NixOS system, you have to [make some symlinks](https://danieldk.eu/Nix-CUDA-on-non-NixOS-systems#make-runopengl-driverlib-and-symlink-the-driver-library)
 to make the CUDA driver libraries visible to Nix packages.
 
-For TGI development, you can use the `impure` dev shell:
+For Ember development, you can use the `impure` dev shell:
 
 ```shell
 nix develop .#impure
@@ -296,7 +296,7 @@ dev shell.
 
 ## Optimized architectures
 
-TGI works out of the box to serve optimized models for all modern models. They can be found in [this list](https://huggingface.co/docs/text-generation-inference/supported_models).
+Ember works out of the box to serve optimized models for all modern models. They can be found in [this list](https://huggingface.co/docs/ember/supported_models).
 
 Other architectures are supported on a best-effort basis using:
 
@@ -326,7 +326,7 @@ text-generation-launcher --model-id mistralai/Mistral-7B-Instruct-v0.2 --quantiz
 
 4bit quantization is available using the [NF4 and FP4 data types from bitsandbytes](https://arxiv.org/pdf/2305.14314.pdf). It can be enabled by providing `--quantize bitsandbytes-nf4` or `--quantize bitsandbytes-fp4` as a command line argument to `text-generation-launcher`.
 
-Read more about quantization in the [Quantization documentation](https://huggingface.co/docs/text-generation-inference/en/conceptual/quantization).
+Read more about quantization in the [Quantization documentation](https://huggingface.co/docs/ember/en/conceptual/quantization).
 
 ## Develop
 

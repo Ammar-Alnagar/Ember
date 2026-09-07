@@ -6,6 +6,6 @@ Standard attention mechanism uses High Bandwidth Memory (HBM) to store, read and
 
 ![Flash Attention](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/tgi/flash-attn.png)
 
-It is implemented for supported models. You can check out the complete list of models that support Flash Attention [here](https://github.com/huggingface/text-generation-inference/tree/main/server/text_generation_server/models), for models with flash prefix.
+It is implemented for supported models. You can check out the complete list of models that support Flash Attention [here](https://github.com/huggingface/ember/tree/main/server/text_generation_server/models), for models with flash prefix.
 
 You can learn more about Flash Attention by reading the paper in this [link](https://arxiv.org/abs/2205.14135).

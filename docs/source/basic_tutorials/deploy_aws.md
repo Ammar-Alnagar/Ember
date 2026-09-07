@@ -1,21 +1,21 @@
-# Deploying TGI on AWS (EC2 and SageMaker)
+# Deploying Ember on AWS (EC2 and SageMaker)
 
-This guide shows how to deploy **Text Generation Inference (TGI)** on AWS and how to benchmark it in a way that is useful for capacity planning.
+This guide shows how to deploy **Ember (Ember)** on AWS and how to benchmark it in a way that is useful for capacity planning.
 
 ## Deploy on EC2 (Docker)
 
 For most setups, the simplest path is to run the official container on an EC2 GPU instance.
 
 1. **Launch an EC2 GPU instance** (for example `g5.*` for NVIDIA GPUs).
-2. **Install Docker + NVIDIA Container Toolkit** (see [Using TGI with Nvidia GPUs](../installation_nvidia) and NVIDIA’s installation docs).
-3. **Run TGI**:
+2. **Install Docker + NVIDIA Container Toolkit** (see [Using Ember with Nvidia GPUs](../installation_nvidia) and NVIDIA’s installation docs).
+3. **Run Ember**:
 
 ```bash
 model=HuggingFaceH4/zephyr-7b-beta
 volume=$PWD/data
 
 docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data \
-  ghcr.io/huggingface/text-generation-inference:3.3.5 \
+  ghcr.io/huggingface/ember:3.3.5 \
   --model-id "$model"
 ```
 
@@ -36,7 +36,7 @@ pip install "sagemaker<3.0.0" --upgrade --quiet
 
 > [!WARNING]
 > [SageMaker Python SDK v3 has been recently released](https://github.com/aws/sagemaker-python-sdk), so unless specified otherwise, all the documentation and tutorials are still using the [SageMaker Python SDK v2](https://github.com/aws/sagemaker-python-sdk/tree/master-v2). We are actively working on updating all the tutorials and examples, but in the meantime make sure to install the SageMaker SDK as `pip install "sagemaker<3.0.0"`.
-TGI includes a SageMaker compatibility route (`POST /invocations`) and a SageMaker entrypoint (`sagemaker-entrypoint.sh`) that maps SageMaker environment variables to TGI launcher settings. The `/invocations` route forwards requests to `/v1/chat/completions` underneath.
+Ember includes a SageMaker compatibility route (`POST /invocations`) and a SageMaker entrypoint (`sagemaker-entrypoint.sh`) that maps SageMaker environment variables to Ember launcher settings. The `/invocations` route forwards requests to `/v1/chat/completions` underneath.
 
 > **Warning:** For this flow, use the AWS SageMaker SDK `< 3.0`. For example: `pip install "sagemaker<3"`.
 
@@ -48,7 +48,7 @@ If you are using Hugging Face’s SageMaker integration (recommended), you typic
 - **`HF_MODEL_QUANTIZE`**: optional quantization
 - **`HF_MODEL_TRUST_REMOTE_CODE`**: optional trust remote code flag
 
-For a minimal example using the Hugging Face SageMaker SDK and the official TGI image URI:
+For a minimal example using the Hugging Face SageMaker SDK and the official Ember image URI:
 
 ```python
 import json
@@ -111,4 +111,4 @@ Example approach:
 
 ### Microbenchmark (model server only)
 
-TGI also provides `text-generation-benchmark` (see the [benchmarking tool README](https://github.com/huggingface/text-generation-inference/tree/main/benchmark#readme)). This tool connects directly to the model server over a Unix socket and bypasses the router, so it’s useful for low-level profiling and batch-size sweeps, but it is **not** an end-to-end benchmark for SageMaker/HTTP.
+Ember also provides `text-generation-benchmark` (see the [benchmarking tool README](https://github.com/huggingface/ember/tree/main/benchmark#readme)). This tool connects directly to the model server over a Unix socket and bypasses the router, so it’s useful for low-level profiling and batch-size sweeps, but it is **not** an end-to-end benchmark for SageMaker/HTTP.

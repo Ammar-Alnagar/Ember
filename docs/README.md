@@ -1,4 +1,4 @@
-Documentation available at: https://huggingface.co/docs/text-generation-inference
+Documentation available at: https://huggingface.co/docs/ember
 
 ## Release
 

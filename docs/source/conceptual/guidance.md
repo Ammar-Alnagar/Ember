@@ -44,7 +44,7 @@ This process can be broken down into the following steps:
 
 2. The model does a forward pass over the batch. This returns probabilities for each token in the vocabulary for each request in the batch.
 
-3. The process of choosing one of those tokens is called `sampling`. The model samples from the distribution of probabilities to choose the next token. In TGI all of the steps before sampling are called `processor`. Grammars are applied as a processor that masks out tokens that are not allowed by the grammar.
+3. The process of choosing one of those tokens is called `sampling`. The model samples from the distribution of probabilities to choose the next token. In Ember all of the steps before sampling are called `processor`. Grammars are applied as a processor that masks out tokens that are not allowed by the grammar.
 
 <div class="flex justify-center">
     <img

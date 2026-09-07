@@ -1,7 +1,7 @@
 
 # Supported Models
 
-Text Generation Inference enables serving optimized models. The following sections list which models (VLMs & LLMs) are supported.
+Ember enables serving optimized models. The following sections list which models (VLMs & LLMs) are supported.
 
 - [Deepseek V2](https://huggingface.co/deepseek-ai/DeepSeek-V2)
 - [Deepseek V3](https://huggingface.co/deepseek-ai/DeepSeek-V3)

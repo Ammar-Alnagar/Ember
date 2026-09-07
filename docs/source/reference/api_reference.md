@@ -2,7 +2,7 @@
 
 #### Table of Contents
 
-- [Text Generation Inference custom API](#text-generation-inference-custom-api)
+- [Ember custom API](#ember-custom-api)
 - [OpenAI Messages API](#openai-messages-api)
   - [Making a Request](#making-a-request)
   - [Streaming](#streaming)
@@ -11,24 +11,24 @@
   - [Cloud Providers](#cloud-providers)
       - [Amazon SageMaker](#amazon-sagemaker)
 
-The HTTP API is a RESTful API that allows you to interact with the text-generation-inference component. Two endpoints are available:
-* Text Generation Inference [custom API](https://huggingface.github.io/text-generation-inference/)
+The HTTP API is a RESTful API that allows you to interact with the ember component. Two endpoints are available:
+* Ember [custom API](https://huggingface.github.io/ember/)
 * OpenAI's [Messages API](#openai-messages-api)
 
 
-## Text Generation Inference custom API
+## Ember custom API
 
-Check the [API documentation](https://huggingface.github.io/text-generation-inference/) for more information on how to interact with the Text Generation Inference API.
+Check the [API documentation](https://huggingface.github.io/ember/) for more information on how to interact with the Ember API.
 
 ## OpenAI Messages API
 
-Text Generation Inference (TGI) now supports the Messages API, which is fully compatible with the OpenAI Chat Completion API. This feature is available starting from version 1.4.0. You can use OpenAI's client libraries or third-party libraries expecting OpenAI schema to interact with TGI's Messages API. Below are some examples of how to utilize this compatibility.
+Ember (Ember) now supports the Messages API, which is fully compatible with the OpenAI Chat Completion API. This feature is available starting from version 1.4.0. You can use OpenAI's client libraries or third-party libraries expecting OpenAI schema to interact with Ember's Messages API. Below are some examples of how to utilize this compatibility.
 
-> **Note:** The Messages API is supported from TGI version 1.4.0 and above. Ensure you are using a compatible version to access this feature.
+> **Note:** The Messages API is supported from Ember version 1.4.0 and above. Ensure you are using a compatible version to access this feature.
 
 ## Making a Request
 
-You can make a request to TGI's Messages API using `curl`. Here's an example:
+You can make a request to Ember's Messages API using `curl`. Here's an example:
 
 ```bash
 curl localhost:3000/v1/chat/completions \
@@ -58,7 +58,7 @@ You can also use OpenAI's Python client library to make a streaming request. Her
 ```python
 from openai import OpenAI
 
-# init the client but point it to TGI
+# init the client but point it to Ember
 client = OpenAI(
     base_url="http://localhost:3000/v1",
     api_key="-"
@@ -85,7 +85,7 @@ If you prefer to make a synchronous request, you can do so like this:
 ```python
 from openai import OpenAI
 
-# init the client but point it to TGI
+# init the client but point it to Ember
 client = OpenAI(
     base_url="http://localhost:3000/v1",
     api_key="-"
@@ -106,14 +106,14 @@ print(chat_completion)
 ## Hugging Face Inference Endpoints
 
 The Messages API is integrated with [Inference Endpoints](https://huggingface.co/inference-endpoints/dedicated).
-Every endpoint that uses "Text Generation Inference" with an LLM, which has a chat template can now be used. Below is an example of how to use IE with TGI using OpenAI's Python client library:
+Every endpoint that uses "Ember" with an LLM, which has a chat template can now be used. Below is an example of how to use IE with Ember using OpenAI's Python client library:
 
 > **Note:** Make sure to replace `base_url` with your endpoint URL and to include `v1/` at the end of the URL. The `api_key` should be replaced with your Hugging Face API key.
 
 ```python
 from openai import OpenAI
 
-# init the client but point it to TGI
+# init the client but point it to Ember
 client = OpenAI(
     # replace with your endpoint url, make sure to include "v1/" at the end
     base_url="https://vlzz10eq3fol3429.us-east-1.aws.endpoints.huggingface.cloud/v1/",
@@ -137,7 +137,7 @@ for message in chat_completion:
 
 ## Cloud Providers
 
-TGI can be deployed on various cloud providers for scalable and robust text generation. One such provider is Amazon SageMaker, which has recently added support for TGI. Here's how you can deploy TGI on Amazon SageMaker:
+Ember can be deployed on various cloud providers for scalable and robust text generation. One such provider is Amazon SageMaker, which has recently added support for Ember. Here's how you can deploy Ember on Amazon SageMaker:
 
 ## Amazon SageMaker
 

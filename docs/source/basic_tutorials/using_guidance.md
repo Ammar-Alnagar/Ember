@@ -1,6 +1,6 @@
 # Guidance
 
-Text Generation Inference (TGI) now supports [JSON and regex grammars](#grammar-and-constraints) and [tools and functions](#tools-and-functions) to help developers guide LLM responses to fit their needs.
+Ember (Ember) now supports [JSON and regex grammars](#grammar-and-constraints) and [tools and functions](#tools-and-functions) to help developers guide LLM responses to fit their needs.
 
 These feature are available starting from version `1.4.3`. They are accessible via the [`huggingface_hub`](https://pypi.org/project/huggingface-hub/) library. The tool support is compatible with OpenAI's client libraries. The following guide will walk you through the new features and how to use them!
 
@@ -8,9 +8,9 @@ _note: guidance is supported as grammar in the `/generate` endpoint and as tools
 
 ## How it works
 
-TGI leverages the [outlines](https://github.com/outlines-dev/outlines) library to efficiently parse and compile the grammatical structures and tools specified by users. This integration transforms the defined grammars into an intermediate representation that acts as a framework to guide and constrain content generation, ensuring that outputs adhere to the specified grammatical rules.
+Ember leverages the [outlines](https://github.com/outlines-dev/outlines) library to efficiently parse and compile the grammatical structures and tools specified by users. This integration transforms the defined grammars into an intermediate representation that acts as a framework to guide and constrain content generation, ensuring that outputs adhere to the specified grammatical rules.
 
-If you are interested in the technical details on how outlines is used in TGI, you can check out the [conceptual guidance documentation](../conceptual/guidance).
+If you are interested in the technical details on how outlines is used in Ember, you can check out the [conceptual guidance documentation](../conceptual/guidance).
 
 ## Table of Contents 📚
 
@@ -19,21 +19,21 @@ If you are interested in the technical details on how outlines is used in TGI, y
 - [The Grammar Parameter](#the-grammar-parameter): Shape your AI's responses with precision.
 - [Constrain with Pydantic](#constrain-with-pydantic): Define a grammar using Pydantic models.
 - [JSON Schema Integration](#json-schema-integration): Fine-grained control over your requests via JSON schema.
-- [Using the client](#using-the-client): Use TGI's client libraries to shape the AI's responses.
+- [Using the client](#using-the-client): Use Ember's client libraries to shape the AI's responses.
 
 ### Tools and Functions
 
 - [The Tools Parameter](#the-tools-parameter): Enhance the AI's capabilities with predefined functions.
-- [Via the client](#text-generation-inference-client): Use TGI's client libraries to interact with the Messages API and Tool functions.
-- [OpenAI integration](#openai-integration): Use OpenAI's client libraries to interact with TGI's Messages API and Tool functions.
+- [Via the client](#ember-client): Use Ember's client libraries to interact with the Messages API and Tool functions.
+- [OpenAI integration](#openai-integration): Use OpenAI's client libraries to interact with Ember's Messages API and Tool functions.
 
 ## Grammar and Constraints 🛣️
 
 ### The Grammar Parameter
 
-In TGI `1.4.3`, we've introduced the grammar parameter, which allows you to specify the format of the response you want from the LLM.
+In Ember `1.4.3`, we've introduced the grammar parameter, which allows you to specify the format of the response you want from the LLM.
 
-Using curl, you can make a request to TGI's Messages API with the grammar parameter. This is the most primitive way to interact with the API and using [Pydantic](#constrain-with-pydantic) is recommended for ease of use and readability.
+Using curl, you can make a request to Ember's Messages API with the grammar parameter. This is the most primitive way to interact with the API and using [Pydantic](#constrain-with-pydantic) is recommended for ease of use and readability.
 
 ```json
 curl localhost:3000/generate \
@@ -311,7 +311,7 @@ print(chat.choices[0].message.tool_calls)
 
 ### OpenAI integration
 
-TGI exposes an OpenAI-compatible API, which means you can use OpenAI's client libraries to interact with TGI's Messages API and Tool functions.
+Ember exposes an OpenAI-compatible API, which means you can use OpenAI's client libraries to interact with Ember's Messages API and Tool functions.
 
 ```python
 from openai import OpenAI

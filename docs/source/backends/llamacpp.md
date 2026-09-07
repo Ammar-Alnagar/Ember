@@ -3,7 +3,7 @@
 The llamacpp backend facilitates the deployment of large language models
 (LLMs) by integrating [llama.cpp][llama.cpp], an advanced inference engine
 optimized for both CPU and GPU computation. This backend is a component
-of Hugging Face’s **Text Generation Inference (TGI)** suite,
+of Hugging Face’s **Ember (Ember)** suite,
 specifically designed to streamline the deployment of LLMs in production
 environments.
 
@@ -35,7 +35,7 @@ To build the Docker image, use the following command:
 ```bash
 docker build \
     -t tgi-llamacpp \
-    https://github.com/huggingface/text-generation-inference.git \
+    https://github.com/huggingface/ember.git \
     -f Dockerfile_llamacpp
 ```
 
@@ -57,7 +57,7 @@ docker build \
     -t tgi-llamacpp \
     --build-arg llamacpp_native=OFF \
     --build-arg llamacpp_cpu_arm_arch=armv9-a+i8mm \
-    https://github.com/huggingface/text-generation-inference.git \
+    https://github.com/huggingface/ember.git \
     -f Dockerfile_llamacpp
 ```
 

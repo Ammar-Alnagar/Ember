@@ -1,6 +1,6 @@
 <div align="center">
 
-# Text Generation Inference benchmarking tool
+# Ember benchmarking tool
 
 ![benchmark](../assets/benchmark.png)
 
@@ -17,7 +17,7 @@ make install-benchmark
 
 ## Run
 
-First, start `text-generation-inference`:
+First, start `ember`:
 
 ```shell
 text-generation-launcher --model-id bigscience/bloom-560m

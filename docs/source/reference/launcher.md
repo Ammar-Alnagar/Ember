@@ -38,7 +38,7 @@ Options:
 ## SHARDED
 ```shell
       --sharded <SHARDED>
-          Whether to shard the model across multiple GPUs By default text-generation-inference will use all available GPUs to run the model. Setting it to `false` deactivates `num_shard`
+          Whether to shard the model across multiple GPUs By default ember will use all available GPUs to run the model. Setting it to `false` deactivates `num_shard`
           
           [env: SHARDED=]
           [possible values: true, false]
@@ -64,7 +64,7 @@ Options:
           - compressed-tensors: Compressed tensors, which can be a mixture of different quantization methods
           - eetq:               8 bit quantization, doesn't require specific model. Should be a drop-in replacement to bitsandbytes with much better performance. Kernels are from <https://github.com/NetEase-FuXi/EETQ.git>
           - exl2:               Variable bit quantization. Requires a specific EXL2 quantized model: <https://hf.co/models?search=exl2>. Requires exllama2 kernels and does not support tensor parallelism (num_shard > 1)
-          - gptq:               4 bit quantization. Requires a specific GTPQ quantized model: <https://hf.co/models?search=gptq>. text-generation-inference will use exllama (faster) kernels wherever possible, and use triton kernel (wider support) when it's not. AWQ has faster kernels
+          - gptq:               4 bit quantization. Requires a specific GTPQ quantized model: <https://hf.co/models?search=gptq>. ember will use exllama (faster) kernels wherever possible, and use triton kernel (wider support) when it's not. AWQ has faster kernels
           - marlin:             4 bit quantization. Requires a specific Marlin quantized model: <https://hf.co/models?search=marlin>
           - bitsandbytes:       Bitsandbytes 8bit. Can be applied on any model, will cut the memory requirement in half, but it is known that the model will be much slower to run than the native f16
           - bitsandbytes-nf4:   Bitsandbytes 4bit. Can be applied on any model, will cut the memory requirement by 4x, but it is known that the model will be much slower to run than the native f16
@@ -198,7 +198,7 @@ Options:
           
           For `max_batch_total_tokens=1000`, you could fit `10` queries of `total_tokens=100` or a single query of `1000` tokens.
           
-          Overall this number should be the largest possible amount that fits the remaining memory (after the model is loaded). Since the actual memory overhead depends on other parameters like if you're using quantization, flash attention or the model implementation, text-generation-inference infers this number automatically if not provided ensuring that the value is as large as possible.
+          Overall this number should be the largest possible amount that fits the remaining memory (after the model is loaded). Since the actual memory overhead depends on other parameters like if you're using quantization, flash attention or the model implementation, ember infers this number automatically if not provided ensuring that the value is as large as possible.
           
           [env: MAX_BATCH_TOTAL_TOKENS=]
 
@@ -307,7 +307,7 @@ Options:
 ## DISABLE_CUSTOM_KERNELS
 ```shell
       --disable-custom-kernels
-          For some models (like bloom), text-generation-inference implemented custom cuda kernels to speed up inference. Those kernels were only tested on A100. Use this flag to disable them if you're running on different hardware and encounter issues
+          For some models (like bloom), ember implemented custom cuda kernels to speed up inference. Those kernels were only tested on A100. Use this flag to disable them if you're running on different hardware and encounter issues
           
           [env: DISABLE_CUSTOM_KERNELS=]
 
@@ -362,7 +362,7 @@ Options:
 ```shell
       --otlp-service-name <OTLP_SERVICE_NAME>
           [env: OTLP_SERVICE_NAME=]
-          [default: text-generation-inference.router]
+          [default: ember.router]
 
 ```
 ## CORS_ALLOW_ORIGIN
@@ -490,7 +490,7 @@ Options:
 ## GRACEFUL_TERMINATION_TIMEOUT
 ```shell
   -g, --graceful-termination-timeout <GRACEFUL_TERMINATION_TIMEOUT>
-          Change timeout of graceful termination of the TGI server
+          Change timeout of graceful termination of the Ember server
           
           [env: GRACEFUL_TERMINATION_TIMEOUT=]
           [default: 90]

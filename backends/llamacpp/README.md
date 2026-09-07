@@ -19,6 +19,6 @@ with different versions of llama.cpp, some additional setup is required.
     cmake --build build --config Release -j
     cmake --install build
 
-## Build TGI
+## Build Ember
 
     PKG_CONFIG_PATH="$LLAMACPP_PREFIX/lib/pkgconfig" cargo build
