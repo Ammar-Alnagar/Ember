@@ -1,170 +1,121 @@
 # Ember Architecture
 
-This document aims at describing the architecture of Ember (Ember), by describing the call flow between the separate components.
+This document describes the architecture of Ember, covering the component call flow,
+the GPU kernel layer, and the build system.
 
-A high-level architecture diagram can be seen here:
+## High-level diagram
 
 ![Ember architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/Ember.png)
 
-This diagram shows well there are these separate components:
+Three main components work together:
 
-- **The router**, also named `webserver`, that receives the client requests, buffers them, creates some batches, and prepares gRPC calls to a model server.
-- **The launcher** is a helper that will be able to launch one or several model servers (if model is sharded), and it launches the router with the compatible arguments.
-- **The model server**, responsible for receiving the gRPC requests and to process the inference on the model. If the model is sharded across multiple accelerators (e.g.: multiple GPUs), the model server shards might be synchronized via NCCL or equivalent.
+| Component | Language | Responsibility |
+|-----------|----------|---------------|
+| **Router** (webserver) | Rust | HTTP/gRPC API, request batching, block allocation |
+| **Launcher** | Rust | Spawns model server shards, passes config to router |
+| **Model server** | Python | Loads model, runs inference, communicates via gRPC |
 
-Note that for other backends (eg. TRTLLM) the model server and launcher are specific to the backend.
+The router and model server can run on separate machines.
 
-The router and the model server can be two different machines, they do not need to be deployed together.
+---
 
 ## The Router
 
-This component is a rust web server binary that accepts HTTP requests using the custom [HTTP API](https://huggingface.github.io/ember/), as well as OpenAI's [Messages API](https://huggingface.co/docs/ember/messages_api).
-The router receives the API calls and handles the "baches" logic (and introduction to batching can be found [here](https://github.com/huggingface/ember/blob/main/router/README.md)).
-It uses different strategies to reduce latency between requests and responses, especially oriented to decoding latency. It will use queues, schedulers, and block allocators to achieve that and produce batched requests that it will then be sent to the model server.
+A Rust web server (`text-generation-router`) that:
 
-### Router's command line
+- Accepts HTTP requests via the [Ember HTTP API](https://huggingface.github.io/ember/) and
+  the [Messages API](https://huggingface.co/docs/ember/messages_api) (OpenAI-compatible).
+- Implements continuous batching: queues requests, builds prefill/decode batches, and packs
+  them into gRPC calls to the model server.
+- Manages paged attention block allocation across requests.
+- Exposes Prometheus metrics and OpenTelemetry traces.
 
-The router command line will be the way to pass parameters to it (it does not rely on configuration file):
+The router is backend-agnostic — it speaks the same gRPC protocol regardless of which
+model server backend is running.
 
-```
-Text Generation Webserver
+### Command-line reference
 
-Usage: text-generation-router [OPTIONS]
+See [All TGI CLI options](./reference/launcher) for the full flag list.
 
-Options:
-      --max-concurrent-requests <MAX_CONCURRENT_REQUESTS>
-          [env: MAX_CONCURRENT_REQUESTS=] [default: 128]
-      --max-best-of <MAX_BEST_OF>
-          [env: MAX_BEST_OF=] [default: 2]
-      --max-stop-sequences <MAX_STOP_SEQUENCES>
-          [env: MAX_STOP_SEQUENCES=] [default: 4]
-      --max-top-n-tokens <MAX_TOP_N_TOKENS>
-          [env: MAX_TOP_N_TOKENS=] [default: 5]
-      --max-input-tokens <MAX_INPUT_TOKENS>
-          [env: MAX_INPUT_TOKENS=] [default: 1024]
-      --max-total-tokens <MAX_TOTAL_TOKENS>
-          [env: MAX_TOTAL_TOKENS=] [default: 2048]
-      --waiting-served-ratio <WAITING_SERVED_RATIO>
-          [env: WAITING_SERVED_RATIO=] [default: 1.2]
-      --max-batch-prefill-tokens <MAX_BATCH_PREFILL_TOKENS>
-          [env: MAX_BATCH_PREFILL_TOKENS=] [default: 4096]
-      --max-batch-total-tokens <MAX_BATCH_TOTAL_TOKENS>
-          [env: MAX_BATCH_TOTAL_TOKENS=]
-      --max-waiting-tokens <MAX_WAITING_TOKENS>
-          [env: MAX_WAITING_TOKENS=] [default: 20]
-      --max-batch-size <MAX_BATCH_SIZE>
-          [env: MAX_BATCH_SIZE=]
-      --hostname <HOSTNAME>
-          [env: HOSTNAME=] [default: 0.0.0.0]
-  -p, --port <PORT>
-          [env: PORT=] [default: 3000]
-      --master-shard-uds-path <MASTER_SHARD_UDS_PATH>
-          [env: MASTER_SHARD_UDS_PATH=] [default: /tmp/text-generation-server-0]
-      --tokenizer-name <TOKENIZER_NAME>
-          [env: TOKENIZER_NAME=] [default: bigscience/bloom]
-      --tokenizer-config-path <TOKENIZER_CONFIG_PATH>
-          [env: TOKENIZER_CONFIG_PATH=]
-      --revision <REVISION>
-          [env: REVISION=]
-      --validation-workers <VALIDATION_WORKERS>
-          [env: VALIDATION_WORKERS=] [default: 2]
-      --json-output
-          [env: JSON_OUTPUT=]
-      --otlp-endpoint <OTLP_ENDPOINT>
-          [env: OTLP_ENDPOINT=]
-      --otlp-service-name <OTLP_SERVICE_NAME>
-          [env: OTLP_SERVICE_NAME=]
-      --cors-allow-origin <CORS_ALLOW_ORIGIN>
-          [env: CORS_ALLOW_ORIGIN=]
-      --ngrok
-          [env: NGROK=]
-      --ngrok-authtoken <NGROK_AUTHTOKEN>
-          [env: NGROK_AUTHTOKEN=]
-      --ngrok-edge <NGROK_EDGE>
-          [env: NGROK_EDGE=]
-      --messages-api-enabled
-          [env: MESSAGES_API_ENABLED=]
-      --disable-grammar-support
-          [env: DISABLE_GRAMMAR_SUPPORT=]
-      --max-client-batch-size <MAX_CLIENT_BATCH_SIZE>
-          [env: MAX_CLIENT_BATCH_SIZE=] [default: 4]
-  -h, --help
-          Print help
-  -V, --version
-          Print version
-```
+---
 
 ## The Model Server
 
-The model server is a python server, capable of starting a server waiting for gRPC requests, loads a given model, perform sharding to provide [tensor parallelism](https://huggingface.co/docs/ember/conceptual/tensor_parallelism), and stays alive while waiting for new requests.
-The model server supports models instantiated using Pytorch and optimized for inference mainly on CUDA/ROCM.
+A Python gRPC server that loads a model, optionally shards it across GPUs via tensor
+parallelism, and processes prefill/decode requests. It stays alive between requests and
+manages its own KV-cache.
 
-### Model Server Variants
+### GPU kernels
 
-Several variants of the model server exist that are actively supported by Hugging Face:
+Performance-critical operations are implemented as Rust GPU kernels using
+[cuTile Rust](https://github.com/NVlabs/cutile-rs) from NVlabs (crate:
+`backends/cutile-kernels`).  These replace the previous CUDA C++ extension modules.
 
-- By default, the model server will attempt building [a server optimized for Nvidia GPUs with CUDA](https://huggingface.co/docs/ember/installation_nvidia). The code for this version is hosted in the [main Ember repository](https://github.com/huggingface/ember).
-- A [version optimized for AMD with ROCm](https://huggingface.co/docs/ember/installation_amd) is hosted in the main Ember repository. Some model features differ.
-- A [version optimized for Intel GPUs](https://huggingface.co/docs/ember/installation_intel) is hosted in the main Ember repository. Some model features differ.
-- The [version for Intel Gaudi](https://huggingface.co/docs/ember/installation_gaudi) is maintained on a forked repository, often resynchronized with the main [Ember repository](https://github.com/huggingface/tgi-gaudi).
-- A [version for Neuron (AWS Inferentia2)](https://huggingface.co/docs/ember/installation_inferentia) is maintained in the main Ember repository. Some model features differ.
-- A version for Google TPUs is maintained as part of [Optimum TPU](https://github.com/huggingface/optimum-tpu/tree/main/ember).
+| Kernel | Purpose |
+|--------|---------|
+| `masked_softmax_f32/f16/bf16` | Attention score normalisation |
+| `q4_matmul` | 4-bit quantized matrix multiply |
+| `q4_reconstruct` | Unpack Q4 weights to f16 |
+| `column_remap` | Reorder weight matrix columns |
 
-Not all variants provide the same features, as hardware and middleware capabilities do not provide the same optimizations.
+Kernels are JIT-compiled at first use via cuTile and cached for subsequent calls.
+CPU-stub builds (compiled without `--features cuda`) return `KernelError::NoGpu`
+so the codebase compiles and tests pass on machines without a GPU.
 
-### Command Line Interface
+See the [GPU Kernels conceptual guide](./conceptual/cutile_kernels) for full details.
 
-The official command line interface (CLI) for the server supports three subcommands, `download-weights`, `quantize` and `serve`:
+### Model server variants
 
-- `download-weights` will download weights from the hub and, in some variants it will convert weights to a format that is adapted to the given implementation;
-- `quantize` will allow to quantize a model using the `qptq` package. This feature is not available nor supported on all variants;
-- `serve` will start the server that load a model (or a model shard), receives gRPC calls from the router, performs an inference and provides a formatted response to the given request.
+| Variant | Hardware | Notes |
+|---------|----------|-------|
+| Default (CUDA) | NVIDIA H100 / A100 / A10G / T4 | sm_80+, CUDA 13.2+ |
+| ROCm | AMD Instinct MI210 / MI250 | Some features differ |
+| Intel GPU | Intel Arc / Data Center GPU | Some features differ |
+| Gaudi | Intel Gaudi 1/2 | Maintained in tgi-gaudi fork |
+| Neuron | AWS Trainium / Inferentia2 | Some features differ |
+| Google TPU | Cloud TPU | Via optimum-tpu |
 
-Serve's command line parameters on the Ember repository are these:
+---
 
+## The Launcher
+
+`text-generation-launcher` is a thin Rust binary that:
+
+1. Downloads model weights from the Hugging Face Hub.
+2. Detects available GPUs and selects the right backend.
+3. Spawns one model server shard per GPU (for tensor-parallel models).
+4. Starts the router with matching configuration.
+
+---
+
+## Build system
+
+All Rust crates live in a single Cargo workspace. The Python server is managed by
+[uv](https://docs.astral.sh/uv/). A unified `setup.sh` script handles both:
+
+```bash
+./setup.sh           # GPU machine
+./setup.sh --cpu-only --no-server   # CI / no GPU
 ```
- Usage: cli.py serve [OPTIONS] MODEL_ID
 
-╭─ Arguments ──────────────────────────────────────────────────────────────────────────────────────────────╮
-│ *    model_id      TEXT  [default: None] [required]                                                      │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --revision                                       TEXT                        [default: None]             │
-│ --sharded              --no-sharded                                          [default: no-sharded]       │
-│ --quantize                                       [bitsandbytes|bitsandbytes  [default: None]             │
-│                                                  -nf4|bitsandbytes-fp4|gptq                              │
-│                                                  |awq|eetq|exl2|fp8]                                     │
-│ --speculate                                      INTEGER                     [default: None]             │
-│ --dtype                                          [float16|bfloat16]          [default: None]             │
-│ --trust-remote-code    --no-trust-remote-code                                [default:                   │
-│                                                                              no-trust-remote-code]       │
-│ --uds-path                                       PATH                        [default:                   │
-│                                                                              /tmp/text-generation-serve… │
-│ --logger-level                                   TEXT                        [default: INFO]             │
-│ --json-output          --no-json-output                                      [default: no-json-output]   │
-│ --otlp-endpoint                                  TEXT                        [default: None]             │
-│ --otlp-service-name                              TEXT                        [default:                   │
-│                                                                              ember...│
-│ --help                                                                       Show this message and exit. │
-╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-```
+See [Installation from source](./installation) for details.
 
-Note that some variants might support different parameters, and they could possibly accept more options that can be passed on using environment variables.
+---
 
-## Call Flow
+## Call flow
 
-Once both components are initialized, weights downloaded and model server is up and running, router and model server exchange data and info through the gRPC call. There are currently two supported schemas, [v2](https://github.com/huggingface/ember/blob/main/proto/generate.proto) and [v3](https://github.com/huggingface/ember/blob/main/proto/v3/generate.proto). These two versions are almost identical, except for:
+After both components start and weights are downloaded, the router and model server
+exchange data and info through gRPC. Two schemas are supported:
+[v2](https://github.com/huggingface/ember/blob/main/proto/generate.proto) and
+[v3](https://github.com/huggingface/ember/blob/main/proto/v3/generate.proto). v3 adds
+input-chunk support (text + image) and paged attention.
 
-- input chunks support, for text and image data,
-- paged attention support
-
-Here's a diagram that displays the exchanges that follow the router and model server startup.
+**Startup handshake:**
 
 ```mermaid
 sequenceDiagram
-
     Router->>Model Server: service discovery
-    Model Server-->>Router: urls for other shards
+    Model Server-->>Router: shard URLs
 
     Router->>Model Server: get model info
     Model Server-->>Router: shard info
@@ -176,7 +127,7 @@ sequenceDiagram
     Model Server-->>Router: warmup result
 ```
 
-After these are done, the router is ready to receive generate calls from multiple clients. Here's an example.
+**Inference loop (example with 3 clients):**
 
 ```mermaid
 sequenceDiagram
@@ -188,47 +139,26 @@ sequenceDiagram
 
     Client 1->>Router: generate_stream
     Router->>Model Server: prefill(batch1)
-    Model Server-->>Router: generations, cached_batch1, timings
+    Model Server-->>Router: generations, cached_batch1
     Router-->>Client 1: token 1
 
     Router->>Model Server: decode(cached_batch1)
-    Model Server-->>Router: generations, cached_batch1, timings
+    Model Server-->>Router: generations, cached_batch1
     Router-->>Client 1: token 2
-
-    Router->>Model Server: decode(cached_batch1)
-    Model Server-->>Router: generations, cached_batch1, timings
-    Router-->>Client 1: token 3
 
     Client 2->>Router: generate_stream
     Router->>Model Server: prefill(batch2)
-    Note right of Model Server: This stops previous batch, that is restarted
-    Model Server-->>Router: generations, cached_batch2, timings
+    Model Server-->>Router: generations, cached_batch2
     Router-->>Client 2: token 1'
 
     Router->>Model Server: decode(cached_batch1, cached_batch2)
-    Model Server-->>Router: generations, cached_batch1, timings
-    Router-->>Client 1: token 4
+    Model Server-->>Router: generations
+    Router-->>Client 1: token 3
     Router-->>Client 2: token 2'
 
-    Note left of Client 1: Client 1 leaves
-    Router->>Model Server: filter_batch(cached_batch1, request_ids_to_keep=batch2)
-    Model Server-->>Router: filtered batch
-
+    Note left of Client 1: Client 1 done
+    Router->>Model Server: filter_batch(cached_batch1)
     Router->>Model Server: decode(cached_batch2)
-    Model Server-->>Router: generations, cached_batch2, timings
+    Model Server-->>Router: generations
     Router-->>Client 2: token 3'
-
-    Client 3->>Router: generate_stream
-    Note right of Model Server: This stops previous batch, that is restarted
-    Router->>Model Server: prefill(batch3)
-    Note left of Client 1: Client 3 leaves without receiving any batch
-    Router->>Model Server: clear_cache(batch3)
-    Note right of Model Server: This stops previous batch, that is restarted
-
-    Router->>Model Server: decode(cached_batch3)
-    Note right of Model Server: Last token (stopping criteria)
-    Model Server-->>Router: generations, cached_batch3, timings
-    Router-->>Client 2: token 4'
-
-
 ```

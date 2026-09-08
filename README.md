@@ -1,350 +1,239 @@
-> [!CAUTION]
-> Ember is now in maintenance mode. Going forward, we will accept pull requests for minor bug fixes, documentation improvements and lightweight maintenance tasks.
->
-> Ember has initiated the movement for optimized inference engines to rely on a `transformers` model architectures. This approach is now adopted by downstream inference engines, which we contribute to and recommend using going forward: [vllm](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), as well as local engines with inter-compatibility such as llama.cpp or MLX.
-
 <div align="center">
-
-<a href="https://www.youtube.com/watch?v=jlMAX2Oaht0">
-  <img width=560 alt="Making Ember deployment optimal" src="https://huggingface.co/datasets/Narsil/tgi_assets/resolve/main/thumbnail.png">
-</a>
 
 # Ember
 
-<a href="https://github.com/huggingface/ember">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/huggingface/ember?style=social">
-</a>
-<a href="https://huggingface.github.io/ember">
-  <img alt="Swagger API documentation" src="https://img.shields.io/badge/API-Swagger-informational">
-</a>
+[![GitHub stars](https://img.shields.io/github/stars/huggingface/ember?style=social)](https://github.com/huggingface/ember)
+[![API docs](https://img.shields.io/badge/API-Swagger-informational)](https://huggingface.github.io/ember)
 
-A Rust, Python and gRPC server for high-performance text generation. Used in production at [Hugging Face](https://huggingface.co)
-to power Hugging Chat, the Inference API and Inference Endpoints.
+A Rust, Python and gRPC server for high-performance text generation, used in production at
+[Hugging Face](https://huggingface.co) to power Hugging Chat, the Inference API, and
+Inference Endpoints.
 
 </div>
 
-## Table of contents
+---
 
-  - [Get Started](#get-started)
-    - [Docker](#docker)
-    - [API documentation](#api-documentation)
-    - [Using a private or gated model](#using-a-private-or-gated-model)
-    - [A note on Shared Memory (shm)](#a-note-on-shared-memory-shm)
-    - [Distributed Tracing](#distributed-tracing)
-    - [Architecture](#architecture)
-    - [Local install](#local-install)
-    - [Local install (Nix)](#local-install-nix)
-  - [Optimized architectures](#optimized-architectures)
-  - [Run locally](#run-locally)
-    - [Run](#run)
-    - [Quantization](#quantization)
-  - [Develop](#develop)
-  - [Testing](#testing)
+## Features
 
-Ember is a toolkit for deploying and serving Large Language Models (LLMs). Ember enables high-performance text generation for the most popular open-source LLMs, including Llama, Falcon, StarCoder, BLOOM, GPT-NeoX, and [more](https://huggingface.co/docs/ember/supported_models). Ember implements many features, such as:
-
-- Simple launcher to serve most popular LLMs
-- Production ready (distributed tracing with Open Telemetry, Prometheus metrics)
-- Tensor Parallelism for faster inference on multiple GPUs
-- Token streaming using Server-Sent Events (SSE)
-- Continuous batching of incoming requests for increased total throughput
-- [Messages API](https://huggingface.co/docs/ember/en/messages_api) compatible with Open AI Chat Completion API
-- Optimized transformers code for inference using [Flash Attention](https://github.com/HazyResearch/flash-attention) and [Paged Attention](https://github.com/vllm-project/vllm) on the most popular architectures
-- Quantization with :
-  - [bitsandbytes](https://github.com/TimDettmers/bitsandbytes)
-  - [GPT-Q](https://arxiv.org/abs/2210.17323)
-  - [EETQ](https://github.com/NetEase-FuXi/EETQ)
-  - [AWQ](https://github.com/casper-hansen/AutoAWQ)
-  - [Marlin](https://github.com/IST-DASLab/marlin)
-  - [fp8](https://developer.nvidia.com/blog/nvidia-arm-and-intel-publish-fp8-specification-for-standardization-as-an-interchange-format-for-ai/)
+- Simple launcher to serve the most popular open-source LLMs
+- Production-ready: distributed tracing (OpenTelemetry), Prometheus metrics
+- Tensor parallelism across multiple GPUs
+- Token streaming via Server-Sent Events (SSE)
+- Continuous batching for maximum throughput
+- [Messages API](https://huggingface.co/docs/ember/en/messages_api) — OpenAI Chat Completion compatible
+- Optimized inference via [Flash Attention](https://github.com/HazyResearch/flash-attention) and
+  [Paged Attention](https://github.com/vllm-project/vllm)
+- **GPU kernels in safe Rust** via [cuTile Rust](https://github.com/NVlabs/cutile-rs) (NVlabs),
+  replacing all legacy CUDA C++ extensions
+- Quantization: bitsandbytes, GPTQ, AWQ, EETQ, Marlin, EXL2, fp8
 - [Safetensors](https://github.com/huggingface/safetensors) weight loading
-- Watermarking with [A Watermark for Large Language Models](https://arxiv.org/abs/2301.10226)
-- Logits warper (temperature scaling, top-p, top-k, repetition penalty, more details see [transformers.LogitsProcessor](https://huggingface.co/docs/transformers/internal/generation_utils#transformers.LogitsProcessor))
-- Stop sequences
-- Log probabilities
-- [Speculation](https://huggingface.co/docs/ember/conceptual/speculation) ~2x latency
-- [Guidance/JSON](https://huggingface.co/docs/ember/conceptual/guidance). Specify output format to speed up inference and make sure the output is valid according to some specs..
-- Custom Prompt Generation: Easily generate text by providing custom prompts to guide the model's output
-- Fine-tuning Support: Utilize fine-tuned models for specific tasks to achieve higher accuracy and performance
+- Speculative decoding (~2× latency)
+- Structured output / JSON guidance
 
 ### Hardware support
 
-- [Nvidia](https://github.com/huggingface/ember/pkgs/container/ember)
-- [AMD](https://github.com/huggingface/ember/pkgs/container/ember) (-rocm)
-- [Inferentia](https://github.com/huggingface/optimum-neuron/tree/main/ember)
-- [Intel GPU](https://github.com/huggingface/ember/pull/1475)
-- [Gaudi](https://github.com/huggingface/tgi-gaudi)
-- [Google TPU](https://huggingface.co/docs/optimum-tpu/howto/serving)
+| Hardware | Notes |
+|----------|-------|
+| NVIDIA (H100 / A100 / A10G / T4 +) | CUDA 13.2+, sm_80+ for cuTile kernels |
+| AMD (MI210 / MI250) | ROCm image |
+| AWS Trainium / Inferentia | Neuron image |
+| Intel GPU | XPU image |
+| Intel Gaudi | Gaudi image |
+| Google TPU | via [optimum-tpu](https://github.com/huggingface/optimum-tpu) |
 
+---
 
-## Get Started
+## Quick start (Docker)
 
-### Docker
-
-For a detailed starting guide, please see the [Quick Tour](https://huggingface.co/docs/ember/quicktour). The easiest way of getting started is using the official Docker container:
-
-```shell
+```bash
 model=HuggingFaceH4/zephyr-7b-beta
-# share a volume with the Docker container to avoid downloading weights every run
 volume=$PWD/data
 
 docker run --gpus all --shm-size 1g -p 8080:80 -v $volume:/data \
-    ghcr.io/huggingface/ember:3.3.5 --model-id $model
+    ghcr.io/huggingface/ember:latest --model-id $model
 ```
 
-And then you can make requests like
+Query the server:
 
 ```bash
+# Streaming generation
 curl 127.0.0.1:8080/generate_stream \
     -X POST \
-    -d '{"inputs":"What is Deep Learning?","parameters":{"max_new_tokens":20}}' \
+    -d '{"inputs":"What is deep learning?","parameters":{"max_new_tokens":50}}' \
     -H 'Content-Type: application/json'
-```
 
-You can also use [Ember's Messages API](https://huggingface.co/docs/ember/en/messages_api) to obtain Open AI Chat Completion API compatible responses.
-
-```bash
+# OpenAI-compatible chat
 curl localhost:8080/v1/chat/completions \
     -X POST \
     -d '{
-  "model": "ember",
-  "messages": [
-    {
-      "role": "system",
-      "content": "You are a helpful assistant."
-    },
-    {
-      "role": "user",
-      "content": "What is deep learning?"
-    }
-  ],
-  "stream": true,
-  "max_tokens": 20
-}' \
+      "model": "ember",
+      "messages": [{"role": "user", "content": "What is deep learning?"}],
+      "stream": true,
+      "max_tokens": 50
+    }' \
     -H 'Content-Type: application/json'
 ```
 
-**Note:** To use NVIDIA GPUs, you need to install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html). We also recommend using NVIDIA drivers with CUDA version 12.2 or higher. For running the Docker container on a machine with no GPUs or CUDA support, it is enough to remove the `--gpus all` flag and add `--disable-custom-kernels`, please note CPU is not the intended platform for this project, so performance might be subpar.
+> Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+> to use GPU acceleration. Remove `--gpus all` and add `--disable-custom-kernels` for CPU-only runs.
 
-**Note:** Ember supports AMD Instinct MI210 and MI250 GPUs. Details can be found in the [Supported Hardware documentation](https://huggingface.co/docs/ember/installation_amd#using-tgi-with-amd-gpus). To use AMD GPUs, please use `docker run --device /dev/kfd --device /dev/dri --shm-size 1g -p 8080:80 -v $volume:/data ghcr.io/huggingface/ember:3.3.5-rocm --model-id $model` instead of the command above.
+**AMD:**
 
-To see all options to serve your models (in the [code](https://github.com/huggingface/ember/blob/main/launcher/src/main.rs) or in the cli):
-```
-text-generation-launcher --help
-```
-
-### API documentation
-
-You can consult the OpenAPI documentation of the `ember` REST API using the `/docs` route.
-The Swagger UI is also available at: [https://huggingface.github.io/ember](https://huggingface.github.io/ember).
-
-### Using a private or gated model
-
-You have the option to utilize the `HF_TOKEN` environment variable for configuring the token employed by
-`ember`. This allows you to gain access to protected resources.
-
-For example, if you want to serve the gated Llama V2 model variants:
-
-1. Go to https://huggingface.co/settings/tokens
-2. Copy your CLI READ token
-3. Export `HF_TOKEN=<your CLI READ token>`
-
-or with Docker:
-
-```shell
-model=meta-llama/Meta-Llama-3.1-8B-Instruct
-volume=$PWD/data # share a volume with the Docker container to avoid downloading weights every run
-token=<your cli READ token>
-
-docker run --gpus all --shm-size 1g -e HF_TOKEN=$token -p 8080:80 -v $volume:/data \
-    ghcr.io/huggingface/ember:3.3.5 --model-id $model
+```bash
+docker run --device /dev/kfd --device /dev/dri --shm-size 1g -p 8080:80 -v $volume:/data \
+    ghcr.io/huggingface/ember:latest-rocm --model-id $model
 ```
 
-### A note on Shared Memory (shm)
+**Private / gated models:**
 
-[`NCCL`](https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/index.html) is a communication framework used by
-`PyTorch` to do distributed training/inference. `ember` makes
-use of `NCCL` to enable Tensor Parallelism to dramatically speed up inference for large language models.
-
-In order to share data between the different devices of a `NCCL` group, `NCCL` might fall back to using the host memory if
-peer-to-peer using NVLink or PCI is not possible.
-
-To allow the container to use 1G of Shared Memory and support SHM sharing, we add `--shm-size 1g` on the above command.
-
-If you are running `ember` inside `Kubernetes`. You can also add Shared Memory to the container by
-creating a volume with:
-
-```yaml
-- name: shm
-  emptyDir:
-   medium: Memory
-   sizeLimit: 1Gi
+```bash
+docker run --gpus all --shm-size 1g -e HF_TOKEN=$HF_TOKEN -p 8080:80 -v $volume:/data \
+    ghcr.io/huggingface/ember:latest --model-id meta-llama/Meta-Llama-3.1-8B-Instruct
 ```
 
-and mounting it to `/dev/shm`.
+---
 
-Finally, you can also disable SHM sharing by using the `NCCL_SHM_DISABLE=1` environment variable. However, note that
-this will impact performance.
+## Local install
 
-### Distributed Tracing
+### One-command setup
 
-`ember` is instrumented with distributed tracing using OpenTelemetry. You can use this feature
-by setting the address to an OTLP collector with the `--otlp-endpoint` argument. The default service name can be
-overridden with the `--otlp-service-name` argument
-
-### Architecture
-
-![Ember architecture](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/Ember.png)
-
-Detailed blogpost by Adyen on Ember inner workings: [LLM inference at scale with Ember (Martin Iglesias Goyanes - Adyen, 2024)](https://www.adyen.com/knowledge-hub/llm-inference-at-scale-with-tgi)
-
-### Local install
-
-You can also opt to install `ember` locally.
-
-First clone the repository and change directory into it:
-
-```shell
-git clone https://github.com/huggingface/ember
+```bash
+git clone https://github.com/huggingface/ember.git
 cd ember
+
+./setup.sh             # GPU machine (CUDA 13.2+, sm_80+)
+./setup.sh --cpu-only  # CI / laptop without a GPU
 ```
 
-Then [install Rust](https://rustup.rs/) and create a Python virtual environment with at least
-Python 3.9, e.g. using `conda` or `python venv`:
+Run `./setup.sh --help` for all options including `--python`, `--cuda-arch`, and `--dev`.
 
-```shell
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+### Manual steps
 
-#using conda
-conda create -n ember python=3.11
-conda activate ember
+**Requirements:**
 
-#using python venv
-python3 -m venv .venv
-source .venv/bin/activate
+| Dependency | Minimum version | Install |
+|------------|----------------|---------|
+| Rust | 1.85 | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| protoc | 21+ | See below |
+| Python | 3.9 | via uv or conda |
+| CUDA *(GPU only)* | 13.2 | [developer.nvidia.com](https://developer.nvidia.com/cuda-downloads) |
+
+**Install protoc (Linux):**
+
+```bash
+PROTOC_VERSION=25.3
+curl -fOL "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip" \
+    -o protoc.zip
+sudo unzip -o protoc.zip -d /usr/local bin/protoc
+sudo unzip -o protoc.zip -d /usr/local 'include/*'
+rm protoc.zip
 ```
 
-You may also need to install Protoc.
+**macOS:** `brew install protobuf`
 
-On Linux:
+**Build:**
 
-```shell
-PROTOC_ZIP=protoc-21.12-linux-x86_64.zip
-curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
-sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
-rm -f $PROTOC_ZIP
+```bash
+# CPU-only (CI / no GPU)
+make setup-cpu
+
+# GPU (CUDA 13.2+, sm_80+)
+make setup
 ```
 
-On MacOS, using Homebrew:
+### Nix
 
-```shell
-brew install protobuf
+```bash
+nix run --extra-experimental-features "nix-command flakes" . -- \
+    --model-id meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Then run:
+Requires a binary cache — see [Installation docs](https://huggingface.co/docs/ember/installation) for setup.
 
-```shell
-BUILD_EXTENSIONS=True make install # Install repository and HF/transformer fork with CUDA kernels
-text-generation-launcher --model-id mistralai/Mistral-7B-Instruct-v0.2
+---
+
+## GPU kernels
+
+Ember implements its performance-critical GPU operations with
+[cuTile Rust](https://github.com/NVlabs/cutile-rs) (NVlabs), a safe tile-based Rust DSL
+that compiles to CUDA. All legacy CUDA C++ extensions have been removed.
+
+| Kernel | Operation |
+|--------|-----------|
+| `masked_softmax_f32/f16/bf16` | Attention softmax with additive mask |
+| `q4_matmul` | 4-bit quantized matrix multiply |
+| `q4_reconstruct` | Unpack Q4 weights to f16 |
+| `column_remap` | Weight column reordering |
+
+Kernels live in `backends/cutile-kernels/` and are compiled as part of the normal
+`cargo build`. No separate compilation step is needed.
+
+- `--features cuda` — GPU mode (requires CUDA 13.2+, sm_80+)
+- *(no features)* — CPU-stub mode, safe for CI runners without a GPU
+
+See the [GPU kernels guide](https://huggingface.co/docs/ember/conceptual/cutile_kernels) for
+full details.
+
+---
+
+## Quantization
+
+```bash
+# bitsandbytes 4-bit NF4
+docker run ... ghcr.io/huggingface/ember:latest --model-id $model --quantize bitsandbytes-nf4
+
+# GPTQ (pre-quantized model)
+docker run ... ghcr.io/huggingface/ember:latest --model-id $model --quantize gptq
+
+# AWQ (pre-quantized model)
+docker run ... ghcr.io/huggingface/ember:latest --model-id $model --quantize awq
 ```
 
-**Note:** on some machines, you may also need the OpenSSL libraries and gcc. On Linux machines, run:
+See the [Quantization guide](https://huggingface.co/docs/ember/conceptual/quantization).
 
-```shell
-sudo apt-get install libssl-dev gcc -y
-```
+---
 
-### Local install (Nix)
+## Architecture
 
-Another option is to install `ember` locally using [Nix](https://nixos.org). Currently,
-we only support Nix on x86_64 Linux with CUDA GPUs. When using Nix, all dependencies can
-be pulled from a binary cache, removing the need to build them locally.
+See [Internal Architecture](https://huggingface.co/docs/ember/architecture) for a detailed
+description of the router, model server, GPU kernel layer, and the gRPC call flow.
 
-First follow the instructions to [install Cachix and enable the Hugging Face cache](https://app.cachix.org/cache/huggingface).
-Setting up the cache is important, otherwise Nix will build many of the dependencies
-locally, which can take hours.
-
-After that you can run Ember with `nix run`:
-
-```shell
-cd ember
-nix run --extra-experimental-features nix-command --extra-experimental-features flakes . -- --model-id meta-llama/Llama-3.1-8B-Instruct
-```
-
-**Note:** when you are using Nix on a non-NixOS system, you have to [make some symlinks](https://danieldk.eu/Nix-CUDA-on-non-NixOS-systems#make-runopengl-driverlib-and-symlink-the-driver-library)
-to make the CUDA driver libraries visible to Nix packages.
-
-For Ember development, you can use the `impure` dev shell:
-
-```shell
-nix develop .#impure
-
-# Only needed the first time the devshell is started or after updating the protobuf.
-(
-cd server
-mkdir text_generation_server/pb || true
-python -m grpc_tools.protoc -I../proto/v3 --python_out=text_generation_server/pb \
-       --grpc_python_out=text_generation_server/pb --mypy_out=text_generation_server/pb ../proto/v3/generate.proto
-find text_generation_server/pb/ -type f -name "*.py" -print0 -exec sed -i -e 's/^\(import.*pb2\)/from . \1/g' {} \;
-touch text_generation_server/pb/__init__.py
-)
-```
-
-All development dependencies (cargo, Python, Torch), etc. are available in this
-dev shell.
-
-## Optimized architectures
-
-Ember works out of the box to serve optimized models for all modern models. They can be found in [this list](https://huggingface.co/docs/ember/supported_models).
-
-Other architectures are supported on a best-effort basis using:
-
-`AutoModelForCausalLM.from_pretrained(<model>, device_map="auto")`
-
-or
-
-`AutoModelForSeq2SeqLM.from_pretrained(<model>, device_map="auto")`
-
-
-
-## Run locally
-
-### Run
-
-```shell
-text-generation-launcher --model-id mistralai/Mistral-7B-Instruct-v0.2
-```
-
-### Quantization
-
-You can also run pre-quantized weights (AWQ, GPTQ, Marlin) or on-the-fly quantize weights with bitsandbytes, EETQ, fp8, to reduce the VRAM requirement:
-
-```shell
-text-generation-launcher --model-id mistralai/Mistral-7B-Instruct-v0.2 --quantize
-```
-
-4bit quantization is available using the [NF4 and FP4 data types from bitsandbytes](https://arxiv.org/pdf/2305.14314.pdf). It can be enabled by providing `--quantize bitsandbytes-nf4` or `--quantize bitsandbytes-fp4` as a command line argument to `text-generation-launcher`.
-
-Read more about quantization in the [Quantization documentation](https://huggingface.co/docs/ember/en/conceptual/quantization).
+---
 
 ## Develop
 
-```shell
-make server-dev
-make router-dev
+```bash
+make server-dev   # Python server with hot-reload
+make router-dev   # Rust router on port 8080
 ```
+
+---
 
 ## Testing
 
-```shell
-# python
-make python-server-tests
-make python-client-tests
-# or both server and client tests
-make python-tests
-# rust cargo tests
-make rust-tests
-# integration tests
-make integration-tests
+```bash
+make rust-tests           # Rust unit tests (no GPU required)
+make python-server-tests  # Python server tests
+make python-client-tests  # Python client tests
+make integration-tests    # End-to-end integration tests
+make lint                 # cargo clippy
 ```
+
+---
+
+## API reference
+
+- Swagger UI: [https://huggingface.github.io/ember](https://huggingface.github.io/ember)
+- Full docs: [https://huggingface.co/docs/ember](https://huggingface.co/docs/ember)
+
+---
+
+## Shared memory note
+
+NCCL (used for tensor parallelism) may use host shared memory. Pass `--shm-size 1g` to
+Docker, or mount a `tmpfs` volume at `/dev/shm` in Kubernetes.
+
+## Distributed tracing
+
+Pass `--otlp-endpoint <collector>` to the launcher to emit OpenTelemetry traces. Override
+the service name with `--otlp-service-name`.

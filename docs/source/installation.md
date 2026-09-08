@@ -1,83 +1,139 @@
 # Installation from source
 
-<Tip warning={true}>
+> **Tip:** The recommended way to run Ember is via Docker. See [Quick Tour](./quicktour),
+> [Nvidia GPU install](./installation_nvidia), or [AMD GPU install](./installation_amd).
+> Only follow the steps below if you need a bare-metal install.
 
-Installing Ember from source is not the recommended usage. We strongly recommend to use Ember through Docker, check the [Quick Tour](./quicktour), [Installation for Nvidia GPUs](./installation_nvidia) and [Installation for AMD GPUs](./installation_amd) to learn how to use Ember with Docker.
+## One-command setup
 
-</Tip>
-
-## Install CLI
-
-You can use Ember command-line interface (CLI) to download weights, serve and quantize models, or get information on serving parameters.
-
-To install the CLI, you need to first clone the Ember repository and then run `make`.
+Clone the repository and run the unified setup script:
 
 ```bash
-git clone https://github.com/huggingface/ember.git && cd ember
-make install
+git clone https://github.com/huggingface/ember.git
+cd ember
+./setup.sh          # GPU machine (requires CUDA 13.2+, sm_80+)
+./setup.sh --cpu-only --no-server   # CI or laptop without a GPU
 ```
 
-If you would like to serve models with custom kernels, run
+The script checks all prerequisites, builds the Rust workspace, installs the Python server,
+and downloads pre-built GPU kernel artifacts in one step. Run `./setup.sh --help` for all options.
 
-```bash
-BUILD_EXTENSIONS=True make install
-```
+---
 
-## Local Installation from Source
+## Manual installation
 
-Before you start, you will need to setup your environment, and install Ember. Ember is tested on **Python 3.9+**.
+If you prefer step-by-step control, follow the sections below.
 
-Ember is available on pypi, conda and GitHub.
+### 1 — System dependencies
 
-To install and launch locally, first [install Rust](https://rustup.rs/) and create a Python virtual environment with at least
-Python 3.9, e.g. using conda:
+**Rust (≥ 1.85)**
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-conda create -n ember python=3.9
-conda activate ember
 ```
 
-You may also need to install Protoc.
+**protoc (Protocol Buffer compiler)**
 
-On Linux:
-
-```bash
-PROTOC_ZIP=protoc-21.12-linux-x86_64.zip
-curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v21.12/$PROTOC_ZIP
-sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
-sudo unzip -o $PROTOC_ZIP -d /usr/local 'include/*'
-rm -f $PROTOC_ZIP
-```
-
-On MacOS, using Homebrew:
+Required by the Rust gRPC build scripts. Install the official binary to get a version that
+supports proto3 optional fields:
 
 ```bash
+# Linux
+PROTOC_VERSION=25.3
+curl -fOL "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip" \
+  -o protoc.zip
+sudo unzip -o protoc.zip -d /usr/local bin/protoc
+sudo unzip -o protoc.zip -d /usr/local 'include/*'
+rm protoc.zip
+
+# macOS (Homebrew)
 brew install protobuf
 ```
 
-Then run to install Ember:
+**Python (≥ 3.9) + uv**
 
 ```bash
-git clone https://github.com/huggingface/ember.git && cd ember
-BUILD_EXTENSIONS=True make install
+# Install uv (fast Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv python install 3.11
 ```
 
-<Tip warning={true}>
+**CUDA (GPU builds only)**
 
-On some machines, you may also need the OpenSSL libraries and gcc. On Linux machines, run:
+CUDA 13.2 or newer is required for the cuTile Rust kernels. Check your version:
+
+```bash
+nvcc --version
+```
+
+For older CUDA installations see [Nvidia GPU install](./installation_nvidia).
+
+### 2 — Clone the repository
+
+```bash
+git clone https://github.com/huggingface/ember.git
+cd ember
+```
+
+### 3 — Build the Rust workspace
+
+```bash
+# CPU-only (no CUDA needed)
+cargo build --profile release-opt
+
+# With GPU kernels (requires CUDA 13.2+)
+cargo build --profile release-opt --features cuda
+```
+
+This builds the router, launcher, benchmark, and the
+[cuTile kernel crate](./conceptual/cutile_kernels) in one step.
+
+### 4 — Install the Python server
+
+```bash
+cd server
+uv sync --frozen \
+  --extra gen --extra bnb --extra accelerate \
+  --extra compressed-tensors --extra quantize \
+  --extra peft --extra outlines --extra torch \
+  --active --python=3.11
+make gen-server-raw
+kernels download .   # downloads pre-built GPU kernel artifacts
+cd ..
+```
+
+### 5 — Verify
+
+```bash
+text-generation-launcher --help
+text-generation-server --help
+```
+
+---
+
+## Make targets
+
+| Target | Description |
+|--------|-------------|
+| `make setup` | Full GPU build + Python server |
+| `make setup-cpu` | CPU-only build, no server |
+| `make setup-dev` | CPU-only, debug mode |
+| `make install` | Server + router + launcher (GPU) |
+| `make install-cpu` | Server + router + launcher (CPU) |
+| `make build-kernels` | cuTile kernel crate only (GPU) |
+| `make build-kernels-cpu` | cuTile kernel crate stub (no GPU needed) |
+| `make rust-tests` | Rust unit tests |
+| `make lint` | `cargo clippy` |
+
+---
+
+## Optional dependencies
+
+**OpenSSL + gcc** — needed on some Linux machines:
 
 ```bash
 sudo apt-get install libssl-dev gcc -y
 ```
 
-</Tip>
-
-Once installation is done, simply run:
-
-```bash
-make run-falcon-7b-instruct
-```
-
-This will serve Falcon 7B Instruct model from the port 8080, which we can query.
+**Nix** — see [Local install (Nix)](../README.md#local-install-nix) in the README for a
+fully reproducible environment.

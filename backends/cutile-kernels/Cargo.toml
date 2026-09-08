@@ -1,0 +1,33 @@
+[package]
+name = "ember-cutile-kernels"
+description = "GPU kernels for Ember TGI implemented with cuTile Rust (NVlabs/cutile-rs), replacing legacy CUDA C++ kernels"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[lib]
+name = "ember_cutile_kernels"
+path = "src/lib.rs"
+
+[dependencies]
+# cuTile Rust — safe, tile-based GPU kernel DSL from NVlabs.
+# Latest stable: 0.3.1 (Sep 2026). Requires CUDA 13.2+, sm_80+, Rust 1.85+.
+# See: https://github.com/NVlabs/cutile-rs
+cutile = { version = "0.3.1", optional = true }
+
+thiserror = "1.0"
+tracing = "0.1"
+
+[features]
+# Enable cuTile GPU kernels. Requires CUDA 13.2+ and sm_80+ GPU.
+# When this feature is disabled, kernels fall back to stub implementations
+# that return KernelError::NoGpu — safe for CPU-only CI builds where no GPU
+# is present.
+cuda = ["dep:cutile"]
+# Convenience alias enabling all GPU features
+gpu = ["cuda"]
+
+[dev-dependencies]
+# Kernel tests run under `cargo test --features cuda` on a machine with a
+# compatible GPU.

@@ -6,6 +6,7 @@ members = [
     "backends/grpc-metadata",
     "backends/trtllm",
     "backends/llamacpp",
+    "backends/cutile-kernels",
     "launcher",
     "router"
 ]
@@ -14,6 +15,7 @@ default-members = [
     "backends/v2",
     "backends/v3",
     "backends/grpc-metadata",
+    "backends/cutile-kernels",
     # "backends/trtllm",
     "launcher",
     "router"

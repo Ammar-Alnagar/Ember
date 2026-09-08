@@ -1,0 +1,19 @@
+[package]
+name = "cutile_kernels_pyo3"
+version = "0.1.0"
+edition = "2021"
+description = "Python bindings for cutile kernels"
+license = "Apache-2.0"
+
+[lib]
+name = "cutile_kernels_pyo3"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py39"] }
+cutile_kernels = { path = ".." }
+cutile = { git = "https://github.com/NVlabs/cutile-rs", branch = "main" }
+cuda-core = { git = "https://github.com/NVlabs/cutile-rs", branch = "main" }
+cuda-async = { git = "https://github.com/NVlabs/cutile-rs", branch = "main" }
+half = "2.0"
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }

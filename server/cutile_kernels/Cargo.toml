@@ -1,0 +1,24 @@
+[package]
+name = "cutile_kernels"
+version = "0.1.0"
+edition = "2021"
+description = "Python-facing wrapper around ember-cutile-kernels for the TGI server"
+license = "Apache-2.0"
+repository = "https://github.com/huggingface/text-generation-inference"
+
+# The actual kernel implementations live in backends/cutile-kernels.
+# This crate re-exports them for the Python gRPC server.
+[dependencies]
+ember-cutile-kernels = { path = "../../backends/cutile-kernels", optional = true }
+thiserror = "1.0"
+
+[features]
+cuda = ["dep:ember-cutile-kernels/cuda"]
+gpu  = ["cuda"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
