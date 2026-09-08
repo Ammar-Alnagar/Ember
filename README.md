@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="ember.jpeg" alt="Ember" width="400"/>
+
 # Ember
 
 [![GitHub stars](https://img.shields.io/github/stars/huggingface/ember?style=social)](https://github.com/huggingface/ember)
